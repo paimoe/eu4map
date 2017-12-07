@@ -2,6 +2,7 @@
 <head>
     <title>idk</title>
     <style>
+    /* TS: app.component.css */
     .overlay {
       fill: none;
       pointer-events: all;
@@ -35,7 +36,7 @@ function tileedit(d) {
     document.querySelector('#edit input.name').value = d['n'];
 }
 
-
+/* TS: map.component.ts:ngOnInit */
 var width = 1500;
 var height = 700;
 var defaulttransform = {
@@ -82,15 +83,17 @@ var rect = container.append("rect")
     .style('pointer-events', 'all')
     .call(zoom);
 
-var paths = svg.append('g')
-    .attr('id', 'paths')
-    //.attr('transform', defaulttransformstr);;
+var paths = svg.append('g').attr('id', 'paths');
 
-//svg.append('circle').attr('cx', 0).attr('cy', 0).attr('r', 30).attr('stroke', 'black').attr('fill', 'white');
+const url = '/output/eu4map.json';
+/* TS */// const url = '/assets/eu4map.json';
 
-d3.json('http://localhost:8000/output/eu4map.json').get(function(error, data) {
+let self = this;
+d3.json(url).get(function(error, data) {
     if (error) throw error;
     
+    /* TS */// self.data = data;
+
     // Global
     paths.selectAll('g')
         .data(data).enter()
@@ -111,20 +114,25 @@ d3.json('http://localhost:8000/output/eu4map.json').get(function(error, data) {
             d3.select(this).classed('hover', false);
         })
         .on('click', function(d) {
+            /* TS: *///self.clickDetail(d);
             tileedit(d);
         });
 
 });
+/* TS: end map.component.ts:ngOnInit */
 
+/* TS: map.component.ts:zoomed */
 function zoomed() {
     var t = d3.event.transform;
     //console.log(t);
     d3.select('#paths').attr('transform', "translate(" + t.x + "," + t.y + ") scale(" + t.k + "," + t.k + ")");
 }
 
+/* TS: map.component.ts:zoomStart */
 function zoomStart() {
     console.log('zoom start')
 }
+/* TS: map.component.ts:zoomEnd */
 function zoomEnd() {
     console.log('zoom end')
 }
