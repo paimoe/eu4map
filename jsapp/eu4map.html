@@ -18,6 +18,17 @@
         stroke-width: 5px;
         opacity:0.8;
     }
+
+    /* Provinces */
+    .pwaste {
+        fill: gray !important;
+    }
+    .psea {
+        fill: #28393c !important;
+    }
+    .pnobody {
+        fill: DimGray !important;
+    }
     </style>
 </head>
 <body>
@@ -52,16 +63,16 @@ var svg = d3.select('body').append('svg')
 
     // Use switching for now :(
     .on('contextmenu', function(d) {
-        d3.event.preventDefault();
+        //d3.event.preventDefault();
         // Switch 
-        let e = document.querySelector('#dragger');
+        let e = d3.select('#dragger');
         let paths = d3.selectAll('path');
         if (e.style['pointer-events'] == 'all') {
             e.style['pointer-events'] = 'none';
-            paths.attr('class', 'pa');
+            paths.classed('pn', false);
         } else {
             e.style['pointer-events'] = 'all';
-            paths.attr('class', 'pn');
+            paths.classed('pn', true);
         }
     });
 
@@ -69,6 +80,7 @@ var container = svg.append('g');
 
 var zoom = d3.zoom()
     //.scaleExtent([.001, .20])
+    /* TS: add this. to funcs */
     .on("zoom", zoomed)
     .on('start', zoomStart)
     .on('end', zoomEnd);
@@ -89,34 +101,105 @@ const url = '/output/eu4map.json';
 /* TS */// const url = '/assets/eu4map.json';
 
 let self = this;
-d3.json(url).get(function(error, data) {
+
+// Get countries
+d3.json('/output/countries.json').get(function(error, countries) {
     if (error) throw error;
-    
-    /* TS */// self.data = data;
+    console.log('loaded ' + countries.length + ' countries');
+    window.COUNTRIES = countries;
 
-    // Global
-    paths.selectAll('g')
-        .data(data).enter()
-        
-        .append('g')
-        .attr('transform', 'translate(0.000000,2048.000000) scale(0.100000,-0.100000)')
-        .append('path')
+    // Get country this belongs to
+    function country(tag) {
+        if (tag === null || tag === undefined) {
+            return false;
+        }
+        if (countries.hasOwnProperty(tag) === false) {
+            return false;
+        } 
+        return countries[tag];
+    };
 
-        .attr('id', (x) => 'province_' + x['id'])
-        .attr('d', (x) => x['d'])
-        .attr('style', (x) => 'fill: ' + x['hex'])
-        .attr('class', 'pn')
+    // Get tile info
+    d3.json('/output/provdata.json').get(function(error, provdata) {
+        if (error) throw error;
+        console.log('loaded info on ' + provdata.length + ' provinces');
 
-        .on('mouseover', function(d) {
-            d3.select(this).classed('hover', true);
-        })
-        .on('mouseout', function(d) {
-            d3.select(this).classed('hover', false);
-        })
-        .on('click', function(d) {
-            /* TS: *///self.clickDetail(d);
-            tileedit(d);
+        // Assign to value
+
+        d3.json(url).get(function(error, pathdata) {
+            if (error) throw error;
+            
+            /* TS */// self.data = data;
+            for (p in pathdata) {
+                if (pathdata.hasOwnProperty(p)) {
+                    let id = pathdata[p]['id'];
+                    pathdata[p] = Object.assign({}, pathdata[p], provdata[id]);
+                }
+            }
+
+            // Global
+            let build = paths.selectAll('g')
+                .data(pathdata).enter()
+                .append('g')
+                .attr('transform', 'translate(0.000000,2048.000000) scale(0.100000,-0.100000)');
+
+            build.append('path')
+                .attr('id', (x) => 'province_' + x['id'])
+                .attr('d', (x) => x['d'])
+                .attr('style', function(d) {
+                    // If country exists                    
+                    let c = country(d['owner']);
+                    if (c === false) {
+                        color = 'gray';
+                    } else {
+                        if (!c['color']) {
+                            console.log('NO COLOR: ', c['name']);
+                        }
+                        color = '#' + c['color'];
+                    }
+                    return 'fill: ' + color;
+                })
+                .attr('class', function(d) {
+                    var classes = ['pn'];
+                    // Who owns it?
+
+                    // Is it wasteland?
+                    if (d['wasteland'] === true) {
+                        classes.push('pwaste');
+                    }
+
+                    // Is it ocean?
+                    if (d['sea'] === true || d['ocean'] === true) {
+                        classes.push('psea');
+                    }
+
+                    // Is it uncolonized?
+                    return classes.join(' ');
+                })
+
+                .on('mouseover', function(d) {
+                    d3.select(this).classed('hover', true);
+                })
+                .on('mouseout', function(d) {
+                    d3.select(this).classed('hover', false);
+                })
+                .on('click', function(d) {
+                    /* TS: *///self.clickDetail(d);
+                    console.log(d);
+                });
+
+            // Add text on top? and maybe a star for the capital?
+            /*build.append('text')
+                .text('This is text')
+                .attr('x', 0)
+                .attr('y', 0)
+                .style('fill', 'white')
+                ;
+            */
+
         });
+
+    });
 
 });
 /* TS: end map.component.ts:ngOnInit */
@@ -130,11 +213,11 @@ function zoomed() {
 
 /* TS: map.component.ts:zoomStart */
 function zoomStart() {
-    console.log('zoom start')
+    //console.log('zoom start')
 }
 /* TS: map.component.ts:zoomEnd */
 function zoomEnd() {
-    console.log('zoom end')
+    //console.log('zoom end')
 }
 
 </script>

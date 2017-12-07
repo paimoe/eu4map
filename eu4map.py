@@ -11,6 +11,7 @@ TODO:
 - timings
 - document json formats
 - able to target single/matched provinces/countries (100-200, all french, etc)
+- combine eu4map.json (paths) and provdata.json?
 """
 
 # convert eu4 stuff to svg
@@ -22,7 +23,7 @@ import pandas as pd
 import namedlist
 import re
 
-import constants
+import constants, renames
 
 # Get path to Eu4 folder so we don't have to move anything
 # auto-detect later
@@ -220,7 +221,13 @@ class ProvinceParser(DataParser):
 
             self.allprovinces[row['province']] = c
 
-        self.save()                    
+        self.save()  
+
+    def remove_comment_line(self, l):
+        if '#' in l:
+            l = l.partition('#')[0]
+        l = l.strip()
+        return l
 
     def parse(self, fname):
         # pid 
@@ -238,13 +245,38 @@ class ProvinceParser(DataParser):
                 raise
 
         with open(os.path.join(fname), 'r') as fc:
+            #skip = False
             for cnt, line in enumerate(fc):
+                fullline = line
+
                 # for now, ignore the date lines
-                if line.strip() == '' or line.strip().startswith(('#', "\t", "}")) or line[0].isdigit():
+                line = self.remove_comment_line(line)
+                if line.strip() == '' or line.strip().startswith(('#', "\t", "}")):
                     continue
 
+                """
+                # when do we end skip
+                if skip is True:
+                    print('skip is true')
+                if line.strip() == '}':
+                    skip = False
+                    continue
+                """
                 line = line.strip()
                 k, v = parse_line(line)
+                """
+#print('LINE', k, v)
+                #print(k)
+                if re.match('^[\d+\.]+\s?={1}\s?{', line) != None:
+                    # Start of a dateline
+                    if line.strip() == fullline.strip() and not line.strip().endswith('}'):
+                        print('only a date opener, skipping')
+                        skip = True
+                        continue
+                """
+                # Ignore until we make a general file parser
+                if re.match('^[\d+\.]+\s?={1}\s?{', line) != None:
+                    break
 
                 # Get ones that match the container field names
                 if k in ('owner', 'controller', 'culture', 'religion', 'hre',):
@@ -362,8 +394,15 @@ class CountryParser(DataParser):
                 if f.endswith('txt'):
                     # Match to current allcountries
                     fname = f[:-4]
+                    # Fix up fucked up tags
                     for tag, c in self.allcountries.items():
-                        if c.name == fname:
+                        name = c.name
+
+                        if name in renames.MAP['common/countries']:
+                            print('Renaming ', name)
+                            name = renames.MAP['common/countries'][name]
+
+                        if name == fname:
                             # Edit this one
                             newcolor = self.parse_color(os.path.join(root, f))
                             c.color = newcolor
