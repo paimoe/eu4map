@@ -6,19 +6,18 @@
       fill: none;
       pointer-events: all;
     }
-    </style>
-    <script>
-
-function toggle() {
-    let e = document.querySelector('#dragger');
-    if (e.style['pointer-events'] == 'all') {
-        e.style['pointer-events'] = 'none';
-    } else {
-        e.style['pointer-events'] = 'all';
+    .pa {
+        pointer-events: all;
     }
-    //e.disabled = false;
-    //console.log(e.disabled);
-}</script>
+    .pn {
+        pointer-events: none;
+    }
+    path.hover {
+        stroke: white;
+        stroke-width: 5px;
+        opacity:0.8;
+    }
+    </style>
 </head>
 <body>
     <h1>menu</h1>
@@ -27,46 +26,43 @@ function toggle() {
         <input type="text" placeholder="name" class="name"/>
         <input type="submit"/>
     </h2>
-    <div><a href="javascript:toggle()">toggle</a></div>
 <script src="https://d3js.org/d3.v4.min.js"></script>
 
 <script>
-function tileinfo(d) {
-    //console.log(d);
-    //document.querySelector('#tile').innerHTML = 'tile#' + d.id;
-}
 
 function tileedit(d) {
     document.querySelector('#edit input.id').value = d['id'];
     document.querySelector('#edit input.name').value = d['n'];
 }
 
-window.panning = false;
-window.zooming = false;
 
 var width = 1500;
 var height = 700;
 var defaulttransform = {
-    'translate': [1500,-300],
-    'scale': [-0.05, 0.05]
+    'translate': [-3000,-400],
+    'scale': 1.3
 };
-function newtransform(t) {
-    // Mainly convert the scale properly
-
-    newscale = [t.k * defaulttransform['scale'][0], t.k * defaulttransform['scale'][1]];
-    t.k = newscale;
-    console.log('newtransform', t, t.toString());
-
-    return t;
-}
 var defaulttransformstr = 'translate(1500,-400) scale(-0.05, 0.05)';
 
 var svg = d3.select('body').append('svg')
     .attr('width', width + 'px')
     .attr('height', height + 'px')
     .style('border', '5px solid red')
-    //.attr('transform', 'rotate(-180, 0, 0)')
-    //.attr('viewBox', '0 0 ' + width + ' ' + height)
+
+    // Use switching for now :(
+    .on('contextmenu', function(d) {
+        d3.event.preventDefault();
+        // Switch 
+        let e = document.querySelector('#dragger');
+        let paths = d3.selectAll('path');
+        if (e.style['pointer-events'] == 'all') {
+            e.style['pointer-events'] = 'none';
+            paths.attr('class', 'pa');
+        } else {
+            e.style['pointer-events'] = 'all';
+            paths.attr('class', 'pn');
+        }
+    });
 
 var container = svg.append('g');
 
@@ -74,13 +70,7 @@ var zoom = d3.zoom()
     //.scaleExtent([.001, .20])
     .on("zoom", zoomed)
     .on('start', zoomStart)
-    .on('end', zoomEnd)
-    ;
-
-var drag = d3.drag()
-    .on('drag', dragged);
-
-//var paths = svg.append('g');
+    .on('end', zoomEnd);
 
 var rect = container.append("rect")
     .attr('id', 'dragger')
@@ -89,24 +79,19 @@ var rect = container.append("rect")
     .attr("height", height)
     .style('stroke', 'yellow')
     .style('stroke-width', '1px')
-    //.style('pointer-events', 'none')
+    .style('pointer-events', 'all')
     .call(zoom);
 
-    // on drag start, disable pointer events for paths
-    //<g transform="translate(0.000000,2048.000000) scale(0.100000,-0.100000)"
 var paths = svg.append('g')
     .attr('id', 'paths')
     //.attr('transform', defaulttransformstr);;
 
-   // d3.select('svg g').call(zoom);
-//d3.select('rect').attr('transform', defaulttransform);
-svg.append('circle').attr('cx', 0).attr('cy', 0).attr('r', 30).attr('stroke', 'black').attr('fill', 'white');
+//svg.append('circle').attr('cx', 0).attr('cy', 0).attr('r', 30).attr('stroke', 'black').attr('fill', 'white');
 
-d3.json('http://localhost:8000/eu4map.json').get(function(error, data) {
+d3.json('http://localhost:8000/output/eu4map.json').get(function(error, data) {
     if (error) throw error;
-    console.log(data);
+    
     // Global
-
     paths.selectAll('g')
         .data(data).enter()
         
@@ -114,77 +99,34 @@ d3.json('http://localhost:8000/eu4map.json').get(function(error, data) {
         .attr('transform', 'translate(0.000000,2048.000000) scale(0.100000,-0.100000)')
         .append('path')
 
-        .attr('id', function(x) {
-            return 'province_' + x['id'];
-        })
+        .attr('id', (x) => 'province_' + x['id'])
         .attr('d', (x) => x['d'])
-        .attr('style', function(x) {
-            return 'fill: ' + x['hex'];// + ';stroke:#fff;stroke-width:1;';
-        })
+        .attr('style', (x) => 'fill: ' + x['hex'])
+        .attr('class', 'pn')
 
-        .style('pointer-events', 'none')
-        .attr('title', (x) => x['id'])
         .on('mouseover', function(d) {
-            d3.select(this).style('stroke', '#fff').style('stroke-width', '1px')
-            tileinfo(d);
+            d3.select(this).classed('hover', true);
         })
         .on('mouseout', function(d) {
-            d3.select(this).style('stroke', null).style('stroke-width', null);
+            d3.select(this).classed('hover', false);
         })
         .on('click', function(d) {
-            //if (d3.event.defaultPrevented) return;
             tileedit(d);
-        })/*
-        .call(drag)*/
-        //.call(zoom)
-        ;
+        });
 
 });
 
 function zoomed() {
     var t = d3.event.transform;
-    console.log(t.scale(-0.05))
-    //console.log(d3.zoomTransform(this.node()));
-    //console.log(d3.zoomTransform(this.parentNode));
-    //var current = d3.zoomTransform(this);
-
-    //console.log(d3.select(this.parentNode).atttrs())
-//console.log(t, d3.event.sourceEvent);
-    
-    //let newzoom = 
-    //t.scale(0.05);
-
-   // t.x = Math.min(-500)
- //   d3.select('#paths').attr("transform", t);
- d3.select('#paths').attr('transform', "translate(" + t.x + "," + t.y + ") scale(" + -t.k + "," + t.k + ")");
- //d3.select('#paths').attr('transform', t);
-    //console.log(rect.node().getBBox());
-
-    // set timeout to disable?
-    /*setTimeout(function() {
-        console.log('remove pointers');
-        //d3.select('#dragger').style('pointer-events', 'none');
-    }, 1500);*/
-}
-
-function dragged() {
-    // A province was dragged, so re-enable and begin zoom func
-    //console.log('dragged',d3.event.x, d3.event.y, d3.event.dx, d3.event.dy);
-    
-    var newdims = {
-        'x':1
-    };
-    //d3.select('#dragger').style('pointer-events', 'all');
+    //console.log(t);
+    d3.select('#paths').attr('transform', "translate(" + t.x + "," + t.y + ") scale(" + t.k + "," + t.k + ")");
 }
 
 function zoomStart() {
     console.log('zoom start')
-    // disable province events
-    //d3.selectAll('path').style('pointer-events', 'none');
 }
 function zoomEnd() {
     console.log('zoom end')
-    //d3.selectAll('path').style('pointer-events', 'all');
 }
 
 </script>
