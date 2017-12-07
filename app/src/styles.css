@@ -1,1 +1,16 @@
 /* You can add global styles to this file, and also import other style files */
+.overlay {
+  fill: none;
+  pointer-events: all;
+}
+.pa {
+    pointer-events: all;
+}
+.pn {
+    pointer-events: none;
+}
+path.hover {
+    stroke: white;
+    stroke-width: 5px;
+    opacity:0.8;
+}

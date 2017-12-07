@@ -11,6 +11,7 @@ export class DetailsComponent implements OnInit, OnChanges {
   allowZoom = true;
   @Output() onSetting = new EventEmitter();
   @Input() provinceID: number = 0;
+  selectedProvince = {};
   
   constructor(public dataStore: DataService) { }
   
@@ -38,7 +39,9 @@ export class DetailsComponent implements OnInit, OnChanges {
     console.log('showing detail of selected province');
     // Hopefully it exists
     let province = this.dataStore.provinces[this.provinceID];
-    console.log(this.provinceID, province);
+    console.log('supass',this.provinceID, province);
+    
+    this.selectedProvince = province;
   }
 
 }

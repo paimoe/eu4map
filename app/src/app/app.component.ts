@@ -18,7 +18,7 @@ export class AppComponent implements OnInit, OnChanges {
   provinceID = 0;
   
   data = {}; // data of all the stuff from the json bro
-  data_src = {/*'paths': 'eu4map.json', not yet, loaded in map component*/'id_map': 'id_gid_map.json', 'provinces': 'provdata.json', 'countries': 'countries.json'};
+  data_src = {/*'paths': 'eu4map.json', not yet, loaded in map component */'provinces': 'provdata.json', 'countries': 'countries.json'};
   
   constructor(private http: HttpClient, public dataStore: DataService) {
     this.settings['allowZoom'] = true;
