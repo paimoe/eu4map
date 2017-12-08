@@ -47,3 +47,7 @@ MAP = {
         'Karabakh': ''
     }
 }
+
+NAMES = {
+    'Zwahili': 'Kilwa',
+}

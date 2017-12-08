@@ -23,11 +23,11 @@ import pandas as pd
 import namedlist
 import re
 
+from parsers import *
 import constants, renames
 
 # Get path to Eu4 folder so we don't have to move anything
 # auto-detect later
-EU4_PATH = 'B:\SteamLibrary\steamapps\common\Europa Universalis IV'
 assert os.path.exists(EU4_PATH)
 assert os.path.exists(os.path.join(EU4_PATH, 'eu4.exe'))
 
@@ -38,47 +38,7 @@ def hex_to_rgb(hx):
     hx = hx.lstrip('#')
     return tuple(int(hx[i:i+2], 16) for i in (0, 2 ,4))
 
-def gamefilepath(str):
-    fp = os.path.join(EU4_PATH, *str.split(os.path.sep))
-    assert os.path.exists(fp), "File {0} does not exist in EU4 directory".format(str)
-    return fp
-
-class DataParser(object): 
-    def __init__(self): pass
-    def checksum(self): pass
-    def load_file(self, fname, type='json'): pass # type = json/csv/custom?
-    def save(self): pass
-
-class Checksum(object):
-
-    cfile = 'checksum.json'
-
-    def __init__(self): 
-        # Load checksum file
-        with open(self.cfile, 'r') as f:
-            self.data = json.loads(f.read())
-
-        self.countries = self.data.get('countries', {})
-        self.provinces = self.data.get('provinces', {})
-        self.map = self.data.get('map', {})
-
-    def save(self, key, data):
-        jstr = json.dumps(data, sort_keys=True).encode('utf-8')
-
-        h = hashlib.md5(jstr).hexdigest()
-
-        set_dict = {
-            'hash': h,
-            'len': len(data),
-            'when': str(datetime.datetime.now())
-            }
-        self.data[key].update(set_dict)
-
-        with open(self.cfile, 'w') as f:
-            f.write(json.dumps(self.data))
-
-        print(set_dict)
-
+"""
 class SVGParser(DataParser):
 
     src = 'map6.svg'
@@ -92,7 +52,7 @@ class SVGParser(DataParser):
 
     def save(self):
         pass
-
+"""
 
 def generate_svg_json():
     src = 'sources/output.svg'
@@ -265,7 +225,6 @@ class ProvinceParser(DataParser):
                 line = line.strip()
                 k, v = parse_line(line)
                 """
-#print('LINE', k, v)
                 #print(k)
                 if re.match('^[\d+\.]+\s?={1}\s?{', line) != None:
                     # Start of a dateline
@@ -354,113 +313,17 @@ class ProvinceParser(DataParser):
         with open(self.dest, 'w') as f:
             f.write(json.dumps(dump))
 
-class CountryParser(DataParser):
-
-    dest = 'output/countries.json'
-
+class UIParser(DataParser):
+    """
+    General purpose UI parser
+    - Collect religions and cultures, organise into groups
+    - Collect achievement filter from constants.py
+    """
     def __init__(self):
-        self.countries = gamefilepath('history/countries')
-        self.colorsrc = gamefilepath('common/countries')
-
-    @staticmethod
-    def container():
-        # Set up container
-        fields = ('tag', 'name','capital', 'gov', 'govrank', 'ideas', 'color', 'culture', 'religion', 'techgroup')
-        nlistfields = []
-        # Set types of specifics
-        for n in fields:
-            # pick default
-            if n in ('ideas',):
-                t = []
-            elif n in ('capital',):
-                t = 0
-            else:
-                t = None
-            nlistfields.append((n, t)) # Set up defaults for namedlist
-
-        return namedlist.namedlist('Country', nlistfields)() # create
-
-    def parse_all(self, from_fresh=False):
-        self.allcountries = {}
-        for root, dirs, files in os.walk(self.countries):            
-            for f in files:
-                if f.endswith('txt'):
-                    c = self.parse(os.path.join(root, f))
-                    self.allcountries[c.tag] = c
-
-        # Also get other parts
-        for root, dirs, files in os.walk(self.colorsrc):
-            for f in files:
-                if f.endswith('txt'):
-                    # Match to current allcountries
-                    fname = f[:-4]
-                    # Fix up fucked up tags
-                    for tag, c in self.allcountries.items():
-                        name = c.name
-
-                        if name in renames.MAP['common/countries']:
-                            print('Renaming ', name)
-                            name = renames.MAP['common/countries'][name]
-
-                        if name == fname:
-                            # Edit this one
-                            newcolor = self.parse_color(os.path.join(root, f))
-                            c.color = newcolor
-                            self.allcountries[tag] = c
-
-
-        self.save()                    
-
-    def parse(self, fname):
-        c = self.container()
-
-        # split fname
-        c.tag, c.name = map(str.strip, os.path.basename(fname)[0:-4].split('-'))
-
-        whitelist_starts = ('government', 'government_rank', 'primary_culture', 'religion', 'technology_group', 'capital')
-
-        def parse_line(line):
-            sp = line.split('=')
-            try:
-                return (sp[0].strip(), sp[1].strip())
-            except IndexError:
-                print(line, sp)
-                raise
-
-        with open(os.path.join(fname), 'r') as fc:
-            for cnt, line in enumerate(fc):
-                # 
-                if line.startswith(whitelist_starts):
-                    k, v = parse_line(line)
-                    
-                    if k == 'government':
-                        c.gov = v
-                    if k == 'government_rank':
-                        c.govrank = v
-                    if k == 'primary_culture':
-                        c.culture = v
-                    if k == 'religion':
-                        c.religion = v
-                    if k == 'technology_group':
-                        c.techgroup = v
-                    if k == 'capital':
-                        c.capital = first_nums(v)
-        return c
-
-    def parse_color(self, fname):
-        with open(fname, 'r') as f:
-            for cnt, line in enumerate(f):
-                if line.startswith('color'):
-                    match = list(map(int, re.findall("(\d+)", line)))
-                    return rgb_to_hex(*match)
-
-
+        pass
+    def parse_all(self): pass
     def save(self):
-        dump = { x: d._asdict() for x, d in self.allcountries.items() }
-        
-        # call _asdict()
-        with open(self.dest, 'w') as f:
-            f.write(json.dumps(dump))
+        pass
 
 if __name__ == '__main__':
     choice = sys.argv[1]
