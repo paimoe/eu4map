@@ -19,7 +19,7 @@ export class AppComponent implements OnInit, OnChanges {
   filtersChanged = false;
   redrawMap = false; // Sent to map component
   
-  data = {}; // data of all the stuff from the json bro
+  data = {}; // data of all the stuff from the json @todo: needed?
   data_src = {'paths': 'eu4map.json', 'provinces': 'provdata.json', 'countries': 'countries.json'};
   
   constructor(private http: HttpClient, public dataStore: DataService, public filters: Filters) {
@@ -82,12 +82,18 @@ export class AppComponent implements OnInit, OnChanges {
     this.provinceID = provid;
   }
   
-  setFilters(choice) {
+  setFilters(choice, addsubfilter = false) {
     if (choice === 'none') {
       this.filters.reset();
     } else {
       this.filters.toggle(choice);
     }
+    
+    if (addsubfilter === true) {
+      console.log('add subfilter');
+      // load from some json file who knows
+    }
+    
     this.filtersChanged = !this.filtersChanged; // toggle to force refresh
     //console.log('FILTERS', choice);
   }

@@ -34,12 +34,14 @@ path.hover {
 
 /* filter list */
 .filterlist {
-    display:table-row;
+    display:table;
+    padding-left:10px;
 }
 .filterlist li {
     display:table-cell;
     cursor: pointer;
     text-decoration:underline;
+    padding:5px;
 }
 .filterlist li:hover {
     text-decoration: none;
