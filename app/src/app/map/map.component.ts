@@ -19,17 +19,20 @@ export class MapComponent implements OnInit, OnChanges {
   @Input() title: string;
   @Output() onSelect = new EventEmitter<number>();
   @Input() filtersChanged;
+  @Input() redrawMap;
   
   constructor(public dataStore: DataService, public filters: Filters) {
-    
-    // load json
   }
   
   ngOnChanges(changes: SimpleChanges) {
-    console.log('map changes func',changes);
-    if (Object.keys(changes)[0] == 'filtersChanged') {
+    //console.log('map changes func',changes);
+    let key = Object.keys(changes)[0];
+    if (key == 'filtersChanged') {
       // Rerun filters
       console.log('ngChanges on map', this.filters);
+      this.drawMap();
+    } else if (key == 'redrawMap') {
+      console.log('got redrawMap event');
       this.drawMap();
     } else {
       this.toggleZoom();
@@ -95,63 +98,32 @@ export class MapComponent implements OnInit, OnChanges {
         .attr("class", "overlay")
         .attr("width", width)
         .attr("height", height)
-        .style('stroke', 'yellow')
-        .style('stroke-width', '1px')
         .style('pointer-events', 'all')
         .call(zoom);
     
     var paths = svg.append('g').attr('id', 'paths');
-    
-    //const url = '/output/eu4map.json';
-    const url = '/assets/eu4map.json';
-    
-    let self = this;
-    
-    // Get countries
-    d3.json('/assets/countries.json').get(function(error, countries) {
-        if (error) throw error;
-        
-        // Send countries data up to app (should this be moved to App?)
-        self.dataStore.countries = countries;
-    
-        // Get tile info
-        d3.json('/assets/provdata.json').get(function(error, provdata) {
-            if (error) throw error;
-            
-            self.dataProvinces = provdata;
-            
-            // Countries with no provinces are releasable (probably)
-    
-            d3.json(url).get(function(error, pathdata) {
-                if (error) throw error;
-                
-                self.dataPaths = pathdata;
-                
-                self.drawMap();
-    
-            });
-    
-        });
-    
-    });
-    
   }
   
   drawMap() {
     /* TS */// self.data = data;
     console.log('DRAWING MAP');
     let self = this;
-    let pathsdata = self.dataPaths;
+    
+    /* Get data from storage */
+    var pathsdata = self.dataStore.paths;
+    var countries = self.dataStore.countries; // not sure if needed
+    var provinces = self.dataStore.provinces; // not sure if needed
+    
     for (let p in pathsdata) {
         if (pathsdata.hasOwnProperty(p)) {
             let id = pathsdata[p]['id'];
-            pathsdata[p] = Object.assign({}, pathsdata[p], self.dataProvinces[id]);
+            pathsdata[p] = Object.assign({}, pathsdata[p], provinces[id]);
         }
     }
     
     // Remove existing paths
     //d3.selectAll('#paths g').remove();
-
+    
     // Global
     let build = d3.select('#paths').selectAll('g')
         .data(pathsdata).enter()
@@ -169,11 +141,11 @@ export class MapComponent implements OnInit, OnChanges {
         })
         .on('click', function(d) {
             self.clickDetail(d);
-            //console.log(d);
         });
     
     // Apply these every time
-    d3.selectAll('path').attr('style', function(d) {
+    d3.selectAll('path')
+        .attr('style', function(d) {
             // If country exists                    
             let c = self.getCountry(d['owner']);
             if (c === false) {

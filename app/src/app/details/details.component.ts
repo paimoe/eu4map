@@ -18,7 +18,7 @@ export class DetailsComponent implements OnInit, OnChanges {
   constructor(public dataStore: DataService, public filters: Filters) { }
   
   ngOnChanges(changes: SimpleChanges) {
-    console.log('DETAIL UPDATE', changes);
+    //console.log('DETAIL UPDATE', changes);
     // Probably just the province id selected lul
     if (this.provinceID != 0) {
       this.showDetail();
@@ -26,19 +26,17 @@ export class DetailsComponent implements OnInit, OnChanges {
   }
   
   ngOnInit() {
-    console.log('details compy');
+    //console.log('details compy');
   }
   
   setAllowZoom() {
-    console.log('setAllowZoom()');
+    //console.log('setAllowZoom()');
     this.allowZoom = !this.allowZoom;
     // Emit this up
     this.onSetting.emit(this.allowZoom);
   }
   
   showDetail() {
-    // Somehow get global info 
-    console.log('showing detail of selected province');
     // Hopefully it exists
     let province = this.dataStore.provinces[this.provinceID];
     let country = this.dataStore.countries[province.owner];

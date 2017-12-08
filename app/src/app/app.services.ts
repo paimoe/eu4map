@@ -19,7 +19,14 @@ export class Filters {
   
   // can we add a set/get and a toggle()? would be easier, and resetAll()
   reset() {
-    console.log('resetting filters')
+    //console.log('resetting filters')
     this.hre = this.releaseable = this.formable = false;
+  }
+  
+  toggle(choice) {
+    console.log('CHOICE TOGGLE', this[choice]);
+    if (typeof this[choice] === "boolean") {
+      this[choice] = !this[choice];
+    }
   }
 }

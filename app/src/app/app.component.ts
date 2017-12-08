@@ -17,13 +17,13 @@ export class AppComponent implements OnInit, OnChanges {
   allowZoom = true;
   provinceID = 0;
   filtersChanged = false;
+  redrawMap = false; // Sent to map component
   
   data = {}; // data of all the stuff from the json bro
-  data_src = {/*'paths': 'eu4map.json', not yet, loaded in map component */'provinces': 'provdata.json', 'countries': 'countries.json'};
+  data_src = {'paths': 'eu4map.json', 'provinces': 'provdata.json', 'countries': 'countries.json'};
   
   constructor(private http: HttpClient, public dataStore: DataService, public filters: Filters) {
     this.settings['allowZoom'] = true;
-    console.log('DATA STORE???', this.dataStore, dataStore);
     
   }
   
@@ -32,20 +32,24 @@ export class AppComponent implements OnInit, OnChanges {
     
     // Ideally cache in IndexedDB, but we can wait
     var self = this;
+    var dcount = Object.keys(self.data_src).length;
+    var allFiles = [];
     for (let k in this.data_src) {
-      //console.log('load ', self.data_src[k], ' into ', k);
-      this.http.get('/assets/' + self.data_src[k])
-        .subscribe(function(data) {
-          // success
-          self.data[k] = data;
-          self.dataStore[k] = data;
-          console.log('loaded ', k);
-        }, function(err) {
-          // error
-          console.log('error loading json: ', err);
-        });
+      allFiles.push(this.http.get('/assets/' + self.data_src[k]).toPromise());
     }
-    
+    Promise.all(allFiles).then(function(datas) {
+      //console.log('finished all promises', datas);
+      
+      // Manually for now
+      self.dataStore.paths = datas[0];
+      self.dataStore.provinces = datas[1];
+      self.dataStore.countries = datas[2];
+      
+      self.redrawMap = true;
+      
+    }, function(err) {
+      console.log('err', err);
+    })
   }
   
   save() {
@@ -73,11 +77,6 @@ export class AppComponent implements OnInit, OnChanges {
     //console.log('now zoom', this.settings['allowZoom']);
   }
   
-  changeFilter(evt) {
-    console.log('changeFilter()', this.filters);
-    this.filtersChanged = !this.filtersChanged;
-  }
-  
   provinceSelected(provid) {
     console.log('selected a province', provid);
     this.provinceID = provid;
@@ -86,11 +85,11 @@ export class AppComponent implements OnInit, OnChanges {
   setFilters(choice) {
     if (choice === 'none') {
       this.filters.reset();
-    } else if (typeof this.filters[choice] === "boolean") {
-      this.filters[choice] = !this.filters[choice];
+    } else {
+      this.filters.toggle(choice);
     }
     this.filtersChanged = !this.filtersChanged; // toggle to force refresh
-    console.log('FILTERS', choice);
+    //console.log('FILTERS', choice);
   }
   
 }
