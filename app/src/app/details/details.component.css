@@ -1,0 +1,58 @@
+#details {
+    margin: 0 10px;
+    border: 1px solid #c3c3c3;
+    border-radius: 10px;
+    padding: 10px;
+    background:white;
+}
+#details h2 {
+    margin-top:0;
+    text-align:center;
+}
+
+#details .province, #details .country {
+    position:relative;
+}
+.showtype {
+    position:absolute;
+    top:10;
+    left:10;
+    color:DimGray;
+    font-size:50%;
+}
+
+#details .province {
+    
+}
+#details .province table {
+    width: 100%;
+}
+#details .province .development {
+    text-align:left;   
+    
+}
+#details .province .development td {
+    border: 1px solid black;
+}
+
+#details .country {
+    
+}
+
+.development {
+    display:table;
+    border-spacing:5px;
+    width:100%;
+}
+.development div.r {
+    display:table-row;
+    justify-content:space-between;
+}
+.development div.x {
+    display:table-cell;
+    width:25%;
+    padding:5px;
+    background:#d1cfe4;
+    border: 1px solid #584dc3;
+    border-radius: 5px;
+}

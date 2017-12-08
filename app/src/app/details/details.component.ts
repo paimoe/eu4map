@@ -1,5 +1,5 @@
 import { Component, OnInit, Output, EventEmitter, Input, OnChanges, SimpleChanges } from '@angular/core';
-import { DataService } from '../app.services';
+import { DataService, Filters } from '../app.services';
 
 @Component({
   selector: 'app-details',
@@ -10,10 +10,12 @@ export class DetailsComponent implements OnInit, OnChanges {
   
   allowZoom = true;
   @Output() onSetting = new EventEmitter();
+  @Output() onFilter = new EventEmitter();
   @Input() provinceID: number = 0;
   selectedProvince = {};
+  sCountry = {};
   
-  constructor(public dataStore: DataService) { }
+  constructor(public dataStore: DataService, public filters: Filters) { }
   
   ngOnChanges(changes: SimpleChanges) {
     console.log('DETAIL UPDATE', changes);
@@ -39,9 +41,18 @@ export class DetailsComponent implements OnInit, OnChanges {
     console.log('showing detail of selected province');
     // Hopefully it exists
     let province = this.dataStore.provinces[this.provinceID];
-    console.log('supass',this.provinceID, province);
-    
+    let country = this.dataStore.countries[province.owner];
+    console.log('c', province, country);
     this.selectedProvince = province;
+    this.sCountry = country;
+  }
+  
+  filter(type) {
+    console.log('filter by this type', type)
+    if (typeof this.filters[type] === "boolean") {
+      this.filters[type] = !this.filters[type];
+    }
+    this.onFilter.emit();
   }
 
 }

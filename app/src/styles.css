@@ -14,3 +14,37 @@ path.hover {
     stroke-width: 5px;
     opacity:0.8;
 }
+
+/* Provinces */
+.pwaste {
+    fill: #414141 !important;
+}
+.psea {
+    fill: #28393c !important;
+}
+.pnobody {
+    fill: DimGray !important;
+}
+.filtered {
+    fill: black !important;
+}
+.pinactive {
+    fill: gray !important;
+}
+
+/* filter list */
+.filterlist {
+    display:table-row;
+}
+.filterlist li {
+    display:table-cell;
+    cursor: pointer;
+    text-decoration:underline;
+}
+.filterlist li:hover {
+    text-decoration: none;
+}
+
+.subfilterlist {
+    display:none;
+}

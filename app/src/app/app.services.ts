@@ -5,6 +5,21 @@ import { Injectable } from '@angular/core';
 export class DataService {
   provinces: any;
   countries: any;
-  id_map: any;
   paths: any;
+}
+
+@Injectable() 
+export class Filters {
+  hre: boolean = false;
+  releaseable: boolean = false;
+  formable: boolean = false;
+  religion: string;
+  culture: string;
+  tradegood: string;
+  
+  // can we add a set/get and a toggle()? would be easier, and resetAll()
+  reset() {
+    console.log('resetting filters')
+    this.hre = this.releaseable = this.formable = false;
+  }
 }

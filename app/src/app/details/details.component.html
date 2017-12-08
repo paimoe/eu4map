@@ -1,2 +1,29 @@
-<h1 style="display:none" (click)="setAllowZoom()" id="toggleZoom">Toggle pan zoom ({{ allowZoom }})</h1>
-<h2>{{ selectedProvince.name }}</h2>
+<div id="details">
+    <h2>{{ selectedProvince.name }}</h2>
+    <div [ngClass]="{'province':true, 'hre': selectedProvince.hre}">
+        <div class="development">
+            <div class="r">
+                <div class="x">{{ selectedProvince.tax }}</div>
+                <div class="x">{{ selectedProvince.prod }}</div>
+                <div class="x">{{ selectedProvince.man }}</div>
+                <div class="x">{{ selectedProvince.trade }}</div>
+            </div>
+        </div>
+        <div class="development">
+            <div class="r">
+                <div class="x" style="width:50%"><a href="#">{{ selectedProvince.religion }}</a></div>
+                <div class="x" style="width:50%"><a href="#">{{ selectedProvince.culture }}</a></div>
+            </div>
+        </div>
+        <div class="cores">
+            Cores: {{ selectedProvince.cores }}
+        </div>
+        <div class="claims">
+            Claims: {{ selectedProvince.claims }}
+        </div>
+    </div>
+    <div class="country">
+        <h2>{{ sCountry.name }}</h2>
+        <!-- x uncontrolled cores -->
+    </div>
+</div>

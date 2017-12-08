@@ -1,7 +1,7 @@
 import { Component, SimpleChanges, OnChanges, OnInit } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 
-import { DataService } from './app.services';
+import { DataService, Filters } from './app.services';
 
 @Component({
   selector: 'app-root',
@@ -16,11 +16,12 @@ export class AppComponent implements OnInit, OnChanges {
   settings = {};
   allowZoom = true;
   provinceID = 0;
+  filtersChanged = false;
   
   data = {}; // data of all the stuff from the json bro
   data_src = {/*'paths': 'eu4map.json', not yet, loaded in map component */'provinces': 'provdata.json', 'countries': 'countries.json'};
   
-  constructor(private http: HttpClient, public dataStore: DataService) {
+  constructor(private http: HttpClient, public dataStore: DataService, public filters: Filters) {
     this.settings['allowZoom'] = true;
     console.log('DATA STORE???', this.dataStore, dataStore);
     
@@ -72,9 +73,24 @@ export class AppComponent implements OnInit, OnChanges {
     //console.log('now zoom', this.settings['allowZoom']);
   }
   
+  changeFilter(evt) {
+    console.log('changeFilter()', this.filters);
+    this.filtersChanged = !this.filtersChanged;
+  }
+  
   provinceSelected(provid) {
     console.log('selected a province', provid);
     this.provinceID = provid;
+  }
+  
+  setFilters(choice) {
+    if (choice === 'none') {
+      this.filters.reset();
+    } else if (typeof this.filters[choice] === "boolean") {
+      this.filters[choice] = !this.filters[choice];
+    }
+    this.filtersChanged = !this.filtersChanged; // toggle to force refresh
+    console.log('FILTERS', choice);
   }
   
 }
