@@ -2,7 +2,7 @@ from parsers.base import DataParser
 import json, os, re
 import namedlist
 
-import constants, renames,sys
+import constants, renames
 
 class CountryParser(DataParser):
 
@@ -97,7 +97,7 @@ class CountryParser(DataParser):
                     if k == 'capital':
                         c.capital = self.first_nums(v)
         return c
-        
+
     def parse_color(self, fname):
         with open(fname, 'r') as f:
             for cnt, line in enumerate(f):
