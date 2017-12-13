@@ -151,9 +151,10 @@ class DataParser(object):
         return l
 
     # split the file into parts
-    def combine_eq(self, t, makelistkeys=[]):
+    def combine_eq(self, t, makelistkeys=[], toplist=False):
         """
         makelistkeys: if any of these keys are encountered, compile into a list, will cast to int if isdigit() succeeds
+        toplist: combine multiple blocks into one, based on key. sometimes (ex history/diplomacy) we just need a top level list of everything
         """
         has_key = None
         use_val = False
@@ -248,10 +249,10 @@ class DataParser(object):
         back = "\n".join(nocomments)
 
         builder = Builder()
-
+        #print(back)
         for k,v in self.combine_eq(back, **kwargs):
             builder.add(k, v)
-        print(builder.data)
+        #print(builder.data)
         return builder.data
 
 class DataParser_old(object): 

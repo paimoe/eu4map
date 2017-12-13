@@ -2,6 +2,8 @@ from parsers.base import DataParser
 import json, os, re
 import namedlist
 
+from .ideas import IdeaParser
+
 import constants, renames
 
 class CountryParser(DataParser):
@@ -16,15 +18,17 @@ class CountryParser(DataParser):
     @staticmethod
     def container():
         # Set up container
-        fields = ('tag', 'name','capital', 'gov', 'govrank', 'ideas', 'color', 'culture', 'religion', 'techgroup', 'history')
+        fields = ('tag', 'name','capital', 'gov', 'govrank', 'ideas', 'color', 'culture', 'religion', 'techgroup', 'history', 'ideastype')
         nlistfields = []
         # Set types of specifics
         for n in fields:
             # pick default
-            if n in ('ideas', 'history'):
+            if n in ('history',):
                 t = []
             elif n in ('capital',):
                 t = 0
+            elif n in ('ideas',):
+                t = {}
             else:
                 t = None
             nlistfields.append((n, t)) # Set up defaults for namedlist
@@ -33,10 +37,20 @@ class CountryParser(DataParser):
 
     def parse_all(self, from_fresh=False):
         self.allcountries = {}
+
+        # get national ideas
+        ideas = IdeaParser()
+        ideas.parse_all()
+
         for root, dirs, files in os.walk(self.countries):            
             for f in files:
                 if f.endswith('txt'):
                     c = self.parse(os.path.join(root, f))
+
+                    i = ideas.get_ideas(c)
+                    c.ideas = i[1]
+                    c.ideastype = i[0]
+
                     self.allcountries[c.tag] = c
 
         # Also get other parts
@@ -58,6 +72,13 @@ class CountryParser(DataParser):
                             newcolor = self.parse_color(os.path.join(root, f))
                             c.color = newcolor
                             self.allcountries[tag] = c
+
+        # Get national ideas
+        # First, get generic
+        # Then override with regional specifics
+        # Then override with national ideas
+
+        # Vassals/subjects are in history/diplomacy, just take the ones that start 1444.1.1
 
 
         self.save()                    
@@ -109,5 +130,7 @@ class CountryParser(DataParser):
         dump = { x: d._asdict() for x, d in self.allcountries.items() }
         
         # call _asdict()
+        #print(dump)
+        #return
         with open(self.dest, 'w') as f:
             f.write(json.dumps(dump))
