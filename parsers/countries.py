@@ -10,8 +10,8 @@ class CountryParser(DataParser):
 
     dest = 'output/countries.json'
 
-    def __init__(self):
-        super().__init__()
+    def __init__(self, test=False):
+        super().__init__(test=test)
         self.countries = self.gamefilepath('history/countries')
         self.colorsrc = self.gamefilepath('common/countries')
 
@@ -35,7 +35,7 @@ class CountryParser(DataParser):
 
         return namedlist.namedlist('Country', nlistfields)() # create
 
-    def parse_all(self, from_fresh=False):
+    def parse_all(self, from_fresh=False, one=None):
         self.allcountries = {}
 
         # get national ideas

@@ -117,11 +117,13 @@ class Builder(object):
 class DataParser(object): 
 
     cs = None
+    test = False
 
-    def __init__(self): 
+    def __init__(self, test=False): 
         self.min_dt = datetime.datetime(1444, 11, 11)
         self.cs = Checksum()
         self.dtre = re.compile("(\d{4})\.(\d+)\.(\d+)")
+        self.test = test
 
     def checksum(self): pass
     def load_file(self, fname, type='json'): pass # type = json/csv/custom?

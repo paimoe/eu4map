@@ -16,7 +16,7 @@ TODO:
 
 # convert eu4 stuff to svg
 from xml.dom import minidom
-import json, os, sys, itertools
+import json, os, sys, itertools, argparse
 import hashlib, datetime
 
 import pandas as pd
@@ -118,38 +118,48 @@ def generate_svg_json():
 
 def first_nums(x):
     return int("".join(itertools.takewhile(str.isdigit, x)))
-
-class UIParser(DataParser):
-    """
-    General purpose UI parser
-    - Collect religions and cultures, organise into groups
-    - Collect achievement filter from constants.py
-    """
+from pprint import pprint
+class GeneralParser(DataParser):
     def __init__(self):
-        pass
-    def parse_all(self): pass
-    def save(self):
-        pass
+        super().__init__()
+    def parse(self, fname):
+        with open(self.gamefilepath(fname), 'r') as fc:
+            read = fc.read()
+
+        parsed = self.oneline(read, toplist=True)
+        pprint(parsed)
+
 
 if __name__ == '__main__':
-    choice = sys.argv[1]
-    if choice == 'svg':
+
+    parser = argparse.ArgumentParser(description='EU4 Map Generators', prog='eu4map')
+    parser.add_argument('action', nargs='?', help='What action to perform (svg, province, country, ui, etc)')
+    parser.add_argument('focus', nargs='?', help='Depends on action, province ID, country tag, to limit to test')
+
+    parser.add_argument('--test', action='store_true', help='Don\'t save to file, just output')
+    
+    opts = parser.parse_args()
+
+    # loaders
+    loaders = ['province', 'country', 'religion']
+
+    if opts.action in loaders:
+        p = eval("{0}Parser()".format(opts.action.capitalize()))
+        p.test = opts.test
+        print(p)
+    elif opts.action == 'svg':
         generate_svg_json()
-    elif choice == 'province':
-        pp = ProvinceParser()
-        try:
-            one = sys.argv[2]
-            print('one', one)
-            pp.parse_all(one=one)
-        except:
-            pp.parse_all()
-            #pp.parse_all(one=9999)
-    elif choice == 'country':
-        cp = CountryParser()
-        cp.parse_all()
-    elif choice == 'check':
+    elif opts.action == 'ui':
+        up = UIParser()
+        up.parse_all()
+    elif opts.action == 'css':
+        print('CSS Parser')
+
+    elif opts.action == 'check':
         print(os.path.exists(os.path.join(EU4_PATH, 'eu4.exe')))
         print(EU4_PATH)
     else:
+        gp = GeneralParser()
+        #gp.parse('history/diplomacy/British_alliances.txt')
         print('No choice selected')
     print('Done')
