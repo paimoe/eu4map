@@ -1,5 +1,5 @@
 from parsers.base import DataParser
-import json, os, re, datetime
+import json, os, re, datetime,pprint
 import namedlist
 
 import pandas as pd
@@ -15,6 +15,7 @@ class ProvinceParser(DataParser):
         super().__init__()
         self.provinces = self.gamefilepath('history/provinces')
         self.provincesmore = self.gamefilepath('history/')
+        #self.terrain = self.gamefilepath('map/terrain.txt') Get terrain and add to province info
         
         # now acquiesce other parts
         if not os.path.exists(self.namesrc):
@@ -74,82 +75,6 @@ class ProvinceParser(DataParser):
 
         self.save()  
 
-    def remove_comment_line(self, l):
-        if '#' in l:
-            l = l.partition('#')[0]
-        l = l.strip()
-        return l
-
-    def parse_file_generator(self, fname):
-        # open, create a generator
-        with open(os.path.join(fname), 'r') as fc:
-            # Get line
-            braces = 0
-            building = False
-            build_multi = []
-            for cnt, line in enumerate(fc):
-
-                line = self.remove_comment_line(line.strip())
-                
-                # if we're building multiline, then just add this line and continue until we hit the last }
-                # TODO: nested multi builds, basically just building a single line thing
-                # TODO: quotes around some values, like dynasty = "von Habsburg"
-                if building is True:
-                    build_multi.append(line.replace(' = ', '='))
-                    #print('BUILDING: ', build_multi)
-                    if '}' not in line:
-                        continue
-
-                    if '}' in line:
-                        braces -= line.count('}')
-                        if braces == 0:
-                            line = ' '.join(build_multi)
-                            building = False
-                            build_multi = []
-                            braces = 0
-
-                        else:
-                            continue
-
-                if line == '':
-                    continue
-
-                if '{' in line or line.endswith('}') or building is True:
-
-                    # we opening a block
-                    # check if its single line
-                    if line.count('{') == line.count('}') and building is False:
-                        # single line block
-                        # Get first up to equals
-                        d = line.split(' = ')
-                        key = d.pop(0)
-                        #print('ass',key, '='.join(d))
-                        rest = '='.join(d)
-
-                        # convert key to dt?
-                        dtkey = re.search("(\d{4})\.(\d+)\.(\d+)", key)
-                        if dtkey is not None:
-                            key = datetime.datetime(*list(map(int, dtkey.groups())))
-
-
-                        z = (key, self.parse_line_block(rest)['obj'])
-                        #print('zzzzz', z)
-                        yield z
-                    else:
-                        # begin mulitline
-                        braces += line.count('{') - line.count('}')
-                        #print('braces', braces)
-                        building = True
-                        build_multi.append(line)
-                        continue
-                else:
-                    sp = line.split('=')
-                    #print(sp)
-                    try:
-                        yield (sp[0].strip(), sp[1].strip())
-                    except IndexError:
-                        yield line
-
     def parse(self, fname):
         # pid 
         pid = self.first_nums(os.path.basename(fname))
@@ -157,12 +82,21 @@ class ProvinceParser(DataParser):
         prov = self.container()
         prov.id = pid
 
-        def set_val(prov, key, val):
+        with open(fname, 'r') as fc:
+            read = fc.read()
 
-            return prov
-
-        for pline in self.parse_file_generator(fname):
+        parsed = self.oneline(read)
+        
+        for pline in parsed.items():
             k, v = pline
+            #print(pline)
+
+            #convert lastkey to datetime if needed
+            dtkey = self.dtre.search(k)
+            if dtkey is not None:
+                #print('YPO')
+                k = datetime.datetime(*list(map(int, dtkey.groups())))
+            #print(type(k), k)
 
             is_dt = isinstance(k, datetime.datetime)
 
@@ -189,7 +123,7 @@ class ProvinceParser(DataParser):
             if k == 'trade_goods':
                 prov.trade = v
 
-            # Check through the history
+            # Check through the history, apply any before our start date
             if is_dt:
                 prov.history.append({ self.format_date(k): v })
                 if k <= self.min_dt:
@@ -211,6 +145,8 @@ class ProvinceParser(DataParser):
                         if act == 'trade_goods':
                             prov.trade = val
 
+        # sort history by datetime key
+        #prov.history.sort(key=dict.keys)
 
         return prov
 
@@ -261,8 +197,8 @@ class ProvinceParser(DataParser):
         provs = self.allprovinces
 
         dump = { d.id: d._asdict() for x, d in provs.items() }
-        #print(json.dumps(dump))
-        #return
+        #pprint.pprint(dump)
+        # return
         # call _asdict()
         with open(self.dest, 'w') as f:
             f.write(json.dumps(dump))
