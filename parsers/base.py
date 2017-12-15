@@ -129,7 +129,7 @@ class DataParser(object):
     def load_file(self, fname, type='json'): pass # type = json/csv/custom?
 
     def save(self, data, stats=False):
-        #self.cs.save('ui', self.data)
+        
         def json_serial(obj):
             """JSON serializer for objects not serializable by default json code"""
 

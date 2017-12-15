@@ -11,8 +11,8 @@ class ProvinceParser(DataParser):
     dest = 'output/provdata.json'
     namesrc = 'sources/definition.csv'
 
-    def __init__(self):
-        super().__init__()
+    def __init__(self, test=False):
+        super().__init__(test=test)
         self.provinces = self.gamefilepath('history/provinces')
         self.provincesmore = self.gamefilepath('history/')
         #self.terrain = self.gamefilepath('map/terrain.txt') Get terrain and add to province info
@@ -52,7 +52,7 @@ class ProvinceParser(DataParser):
             for f in files:
                 if f.endswith('txt'):
                     if one is False or re.match('^{0}(\s|\-)+'.format(one), f) != None:
-                        print('checking ', f)
+                        #print('checking ', f)
                         c = self.parse(os.path.join(root, f))
 
                         c = self.set_special(c)
@@ -74,6 +74,8 @@ class ProvinceParser(DataParser):
             self.allprovinces[row['province']] = c
 
         self.save()  
+
+        return self.allprovinces
 
     def parse(self, fname):
         # pid 
@@ -109,7 +111,7 @@ class ProvinceParser(DataParser):
             if k == 'add_claim':
                 prov.claims.append(v)
             if k == 'discovered_by':
-                prov.visible.append(v)
+                prov.visible = v
             if k == 'hre':
                 prov.hre = True if v == 'yes' else False
             if not is_dt:

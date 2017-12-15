@@ -92,8 +92,10 @@ class CountryParser(DataParser):
 
         # Vassals/subjects are in history/diplomacy, just take the ones that start 1444.1.1
 
+        dump = { x: d._asdict() for x, d in self.allcountries.items() }
 
-        self.save()                    
+        self.save(dump)
+        return self.allcountries
 
     def parse(self, fname):
         c = self.container()
@@ -137,3 +139,4 @@ class CountryParser(DataParser):
                 if line.startswith('color'):
                     match = list(map(int, re.findall("(\d+)", line)))
                     return self.rgb_to_hex(*match)
+                    
