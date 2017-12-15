@@ -8,7 +8,7 @@ import constants, renames
 
 class CountryParser(DataParser):
 
-    dest = 'output/countries.json'
+    output = 'output/countries.json'
 
     def __init__(self, test=False):
         super().__init__(test=test)
@@ -42,9 +42,16 @@ class CountryParser(DataParser):
         ideas = IdeaParser()
         ideas.parse_all()
 
+        # Check one
+
         for root, dirs, files in os.walk(self.countries):            
             for f in files:
                 if f.endswith('txt'):
+                    if one is not None:
+                        # check tag
+                        if not f.startswith(one):
+                            continue
+
                     c = self.parse(os.path.join(root, f))
 
                     i = ideas.get_ideas(c)
@@ -63,15 +70,20 @@ class CountryParser(DataParser):
                     for tag, c in self.allcountries.items():
                         name = c.name
 
+                        # Checks for rename in other game files, but not the actual country
                         if name in renames.MAP['common/countries']:
-                            print('Renaming ', name)
                             name = renames.MAP['common/countries'][name]
 
                         if name == fname:
                             # Edit this one
                             newcolor = self.parse_color(os.path.join(root, f))
                             c.color = newcolor
-                            self.allcountries[tag] = c
+
+                        # Check user name of country, eg Zwahili - Swahili - Kilwa
+                        if name in renames.NAMES:
+                            c.name = renames.NAMES[name]
+
+                        self.allcountries[tag] = c
 
         # Get national ideas
         # First, get generic
@@ -125,12 +137,3 @@ class CountryParser(DataParser):
                 if line.startswith('color'):
                     match = list(map(int, re.findall("(\d+)", line)))
                     return self.rgb_to_hex(*match)
-
-    def save(self):
-        dump = { x: d._asdict() for x, d in self.allcountries.items() }
-        
-        # call _asdict()
-        #print(dump)
-        #return
-        with open(self.dest, 'w') as f:
-            f.write(json.dumps(dump))

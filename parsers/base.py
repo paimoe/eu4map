@@ -49,8 +49,6 @@ class Checksum(object):
 
         print(set_dict)
 
-
-
 class Builder(object):
     def __init__(self):
         self.keys = []
@@ -67,6 +65,8 @@ class Builder(object):
 
         for key in keys[:-1]:
             dic = dic.setdefault(key, {})
+
+        # we don't want to nest if its in the exceptions
 
         try:
             # see if it exists, and convert to list if it does
@@ -127,7 +127,29 @@ class DataParser(object):
 
     def checksum(self): pass
     def load_file(self, fname, type='json'): pass # type = json/csv/custom?
-    def save(self): pass
+
+    def save(self, data, stats=False):
+        #self.cs.save('ui', self.data)
+        def json_serial(obj):
+            """JSON serializer for objects not serializable by default json code"""
+
+            if isinstance(obj, (datetime.datetime, datetime.date)):
+                return obj.isoformat()
+            raise TypeError ("Type %s not serializable" % type(obj))
+
+        if self.output is None:
+            raise('No self.output set when calling save()')
+
+        if stats is True and self.test is False:
+            key = self.output.partition('.')[0]
+            self.cs.save(key, data)
+
+        if self.test is False:
+            dump = json.dumps(data, default=json_serial)
+            with open(self.output, 'w') as f:
+                f.write(dump)
+        else:
+            print(data)
 
     def gamefilepath(self, path):
         fp = os.path.join(EU4_PATH, *path.split(os.path.sep))

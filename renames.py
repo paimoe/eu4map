@@ -49,5 +49,5 @@ MAP = {
 }
 
 NAMES = {
-    'Zwahili': 'Kilwa',
+    'Swahili': 'Kilwa',
 }
