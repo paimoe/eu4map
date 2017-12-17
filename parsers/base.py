@@ -50,7 +50,7 @@ class Checksum(object):
         print(set_dict)
 
 class Builder(object):
-    def __init__(self):
+    def __init__(self, seperate=None, **kwargs):
         self.keys = []
         self.depth = 0
         self.tree = []
@@ -59,6 +59,15 @@ class Builder(object):
         self.splitter = 'xx__xx' # random value to split the string since we can't really use space, _ or .
         self.dtre = re.compile("(\d{4})\.(\d+)\.(\d+)")
 
+        # Check for flags
+        self.seperate = None
+        self.sepname = ''
+        self.sepvals = []
+        if seperate is not None:
+            self.seperate = seperate
+            self.sepname = list(seperate.keys())[0] # get first key, we'll recombine on this [todo: allow for multiple if needed]
+            self.sepvals = seperate[self.sepname]
+
     def nest(self, keys, value):
         dic = self.data
         lastkey = keys[-1]
@@ -66,18 +75,24 @@ class Builder(object):
         for key in keys[:-1]:
             dic = dic.setdefault(key, {})
 
-        # we don't want to nest if its in the exceptions
-
         try:
             # see if it exists, and convert to list if it does
             # if it doesn't exist, dic[lastkey] will hit exception
             if not isinstance(dic[lastkey], list):
+                #print('setting ', dic[lastkey], ' to list')
                 dic[lastkey] = [dic[lastkey]]
+
             dic[lastkey].append(value)
 
         except KeyError:
-            # just set it
-            dic[lastkey] = value
+            # doesn't exist, so add it on
+            # if we seperate, then yeah
+            if lastkey in self.sepvals:
+                # Check to ensure we don't combine these. they'll be split up in finalize()
+                # make sure we make these lists of lists
+                dic[lastkey] = [value]
+            else:
+                dic[lastkey] = value
 
     def add(self, k, v):
         # check if its a control block
@@ -114,12 +129,61 @@ class Builder(object):
         self.tree.pop()
         self.depth -= 1
 
+    def finalize(self):
+        # if we're meant to seperate any, then loop through and split
+        # we can assume the lists are in the correct order since we read the page vertically
+
+        """
+        - split into total blocks
+        - find the key(s) that should be seperated. it'll be a dict with each key, and a list of values (including lists of lists)
+        """
+        if self.seperate is not None:
+            for _, block in self.data.items(): # eg for each trade node, split it out
+                i = 0
+                #print(block)
+                newlist = []
+                try:
+                    obj = block[self.sepname]
+                    #rint('LEN', obj['_len'])
+
+                    # loop through all items of this obj, and get the length, aka how many groups to split it into
+                    seplen = 0
+                    for _, x in obj.items():
+                        if seplen == 0:
+                            seplen = len(x)
+                        else:
+                            assert seplen == len(x)
+
+                    while i < seplen:
+                        newobj = {}
+                        #k = self.sepvals[i]
+                        #print(obj[k])
+
+                        for k in self.sepvals:
+                            #print('setting newobj[{0}] to obj[{0}][{1}]'.format(k, i))
+                            newobj[k] = obj[k][i]
+                        #print('our new obj', newobj)
+
+                        i += 1
+                        newlist.append(newobj)
+                except KeyError: # some won't exist. eg tradenodes with no outgoing
+                    pass
+
+                #print('new', newlist)
+
+                # unset the big long lists, and set the new thing
+                block[self.sepname] = newlist
+
+
+
+        return self.data
+
 class DataParser(object): 
 
     cs = None
     test = False
 
-    def __init__(self, test=False): 
+    def __init__(self, test=False, **kwargs): 
         self.min_dt = datetime.datetime(1444, 11, 11)
         self.cs = Checksum()
         self.dtre = re.compile("(\d{4})\.(\d+)\.(\d+)")
@@ -129,7 +193,6 @@ class DataParser(object):
     def load_file(self, fname, type='json'): pass # type = json/csv/custom?
 
     def save(self, data, stats=False):
-        
         def json_serial(obj):
             """JSON serializer for objects not serializable by default json code"""
 
@@ -175,10 +238,11 @@ class DataParser(object):
         return l
 
     # split the file into parts
-    def combine_eq(self, t, makelistkeys=[], toplist=False):
+    def combine_eq(self, t, makelistkeys=[], toplist=False, seperate=[]):
         """
         makelistkeys: if any of these keys are encountered, compile into a list, will cast to int if isdigit() succeeds
         toplist: combine multiple blocks into one, based on key. sometimes (ex history/diplomacy) we just need a top level list of everything
+        seperate: similar to toplist, don't combine these into one, trade nodes can have multiple outgoing={}
         """
         has_key = None
         use_val = False
@@ -272,12 +336,12 @@ class DataParser(object):
 
         back = "\n".join(nocomments)
 
-        builder = Builder()
+        builder = Builder(**kwargs)
         #print(back)
         for k,v in self.combine_eq(back, **kwargs):
             builder.add(k, v)
         #print(builder.data)
-        return builder.data
+        return builder.finalize()
 
 class DataParser_old(object): 
 

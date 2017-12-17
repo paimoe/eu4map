@@ -141,12 +141,12 @@ if __name__ == '__main__':
     opts = parser.parse_args()
 
     # loaders
-    loaders = ['province', 'country', 'religion']
+    loaders = ['province', 'country', 'religion', 'tradenode']
 
     if opts.action in loaders:
         p = eval("{0}Parser()".format(opts.action.capitalize()))
         p.test = opts.test
-        print(p)
+        p.parse_all(one=opts.focus)
     elif opts.action == 'svg':
         generate_svg_json()
     elif opts.action == 'ui':
@@ -154,6 +154,8 @@ if __name__ == '__main__':
         up.parse_all()
     elif opts.action == 'css':
         print('CSS Parser')
+    elif opts.action == 'all':
+        pass
 
     elif opts.action == 'check':
         print(os.path.exists(os.path.join(EU4_PATH, 'eu4.exe')))

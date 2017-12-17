@@ -12,14 +12,24 @@ class EU4MapTest(unittest.TestCase):
     def setUpClass(cls):
         cp = CountryParser(test=True)
         pp = ProvinceParser(test=True)
+        allpp = pp.parse_all(one=[1,124,134])
+        rp = ReligionParser(test=True)
+        tp = TradenodeParser(test=True)
 
         # Country files
         cls.austria = cp.parse_all(one='HAB')
         cls.kilwa = cp.parse_all(one='ZAN')    
 
         # province files
-        cls.stockholm = pp.parse_all(one=1)
-        cls.messina = pp.parse_all(one=124)
+        cls.stockholm = allpp[1]
+        cls.messina = allpp[124]
+        cls.wien = allpp[134]
+
+        #religions
+        cls.religions = rp.parse_all()
+
+        # tradenodes
+        cls.tradenodes = tp.parse_all()
 
 class TestCountryParser(EU4MapTest):
 
@@ -61,10 +71,10 @@ class TestCountryParser(EU4MapTest):
 
 class TestProvinceParser(EU4MapTest): 
     def test_parse(self):
-        s = self.stockholm[1]
-
-        self.assertEqual(len(self.stockholm), 1)
-        self.assertIsInstance(self.stockholm, dict)
+        s = self.stockholm
+        #print(len(s), s)
+        self.assertEqual(len(s), 20)
+        #self.assertIsInstance(s, dict)
         self.assertEqual(s.id, 1)
         self.assertEqual(s.name, 'Stockholm')
         self.assertEqual(s.owner, 'SWE')
@@ -81,10 +91,37 @@ class TestProvinceParser(EU4MapTest):
         self.assertEqual(s.visible, ['eastern', 'western', 'muslim', 'ottoman'])
         #print('stock', self.stockholm)
 
+        #test colours
+        wien = self.wien
+        self.assertTrue(wien.hre)
+
     def test_applied_history(self):
         pass
     def test_wasteland(self): pass
-    def test_history(self): pass
+    def test_history(self): pass # use messina
+
+class TestReligions(EU4MapTest): 
+    def test_parser(self):
+
+        c = self.religions['christian']
+        #print(c)
+        self.assertEqual(c['crusade_name'], 'CRUSADE')
+        self.assertTrue('protestant' in c)
+
+class TestTradenodes(EU4MapTest): 
+    def test_endnode(self):
+        venice = self.tradenodes['venice']
+        
+        self.assertEqual(venice['color'], [54, 167, 156])
+        self.assertTrue(venice['end'])
+        self.assertEqual(len(venice['members']), 23)
+        self.assertEqual(len(venice['outgoing']), 0)
+        self.assertEqual(venice['location'], 1308)
+    def test_normal(self):
+        pass
+
+
+class TestUI(EU4MapTest): pass
 
 
 if __name__ == '__main__':

@@ -4,11 +4,13 @@ import namedlist
 
 import pandas as pd
 
+from .tradenodes import TradenodeParser
+
 import constants, renames,sys
 
 class ProvinceParser(DataParser):
 
-    dest = 'output/provdata.json'
+    output = 'output/provdata.json'
     namesrc = 'sources/definition.csv'
 
     def __init__(self, test=False):
@@ -26,7 +28,7 @@ class ProvinceParser(DataParser):
         # Set up container
         fields = ('id', 'name', 'owner', 'controller', 'cores', 'culture', 'religion', 
             'tax', 'prod', 'man', 'trade', 'hre', 'claims', 'visible', 'area', 'sea', 'ocean', 'wasteland',
-            'history')
+            'history', 'tradenode')
         nlistfields = []
         # Set types of specifics
         for n in fields:
@@ -37,25 +39,37 @@ class ProvinceParser(DataParser):
                 t = 0
             elif n in ('sea', 'ocean', 'wasteland'):
                 t = False
+            elif n in ('tradenode',):
+                t = {}
             else:
                 t = None
             nlistfields.append((n, t)) # Set up defaults for namedlist
 
         return namedlist.namedlist('Province', nlistfields)() # create
 
-    def parse_all(self, from_fresh=False, one=False):
+    def parse_all(self, from_fresh=False, one=None):
+        tp = TradenodeParser(test=True, internal=True)
+        tp.parse_all()
+
+        if one is not None:
+            if not isinstance(one, list):
+                one = list(one)
+
         self.allprovinces = {}
         self.areas = self.parse_areas()
         for root, dirs, files in os.walk(self.provinces):
             files = sorted(files, key=lambda x: self.first_nums(x))
-            
             for f in files:
                 if f.endswith('txt'):
-                    if one is False or re.match('^{0}(\s|\-)+'.format(one), f) != None:
-                        #print('checking ', f)
+                    if one is None or (one is not None and self.first_nums(f) in one):
+                        print('checking ', f)
                         c = self.parse(os.path.join(root, f))
 
                         c = self.set_special(c)
+
+                        # Get trade node
+                        c.tradenode['name'] = tp.belongs_to(c.id) # color is in the tradenodes datafile
+                        c.tradenode['main'] = tp.is_main(c.id)
 
                         self.allprovinces[int(c.id)] = c
 
@@ -72,8 +86,9 @@ class ProvinceParser(DataParser):
             c.name = str(row['x'])
 
             self.allprovinces[row['province']] = c
-
-        self.save()  
+        
+        dump = { d.id: d._asdict() for x, d in self.allprovinces.items() }
+        self.save(dump)  
 
         return self.allprovinces
 
@@ -96,9 +111,7 @@ class ProvinceParser(DataParser):
             #convert lastkey to datetime if needed
             dtkey = self.dtre.search(k)
             if dtkey is not None:
-                #print('YPO')
                 k = datetime.datetime(*list(map(int, dtkey.groups())))
-            #print(type(k), k)
 
             is_dt = isinstance(k, datetime.datetime)
 
@@ -111,9 +124,12 @@ class ProvinceParser(DataParser):
             if k == 'add_claim':
                 prov.claims.append(v)
             if k == 'discovered_by':
-                prov.visible = v
+                if isinstance(v, list):
+                    prov.visible = v
+                else:
+                    prov.visible.append(v)
             if k == 'hre':
-                prov.hre = True if v == 'yes' else False
+                prov.hre = v
             if not is_dt:
                 if k.startswith('base_'):
                     if k == 'base_tax':
@@ -143,7 +159,7 @@ class ProvinceParser(DataParser):
                         if act == 'discovered_by':
                             prov.visible.append(val)
                         if act == 'hre':
-                            prov.hre = True if val == 'yes' else False
+                            prov.hre = val
                         if act == 'trade_goods':
                             prov.trade = val
 
@@ -193,14 +209,3 @@ class ProvinceParser(DataParser):
         if c.area in constants.SEAS:
             c.ocean = True
         return c
-    
-    def save(self):
-        # sort allprovinces by id for convenience
-        provs = self.allprovinces
-
-        dump = { d.id: d._asdict() for x, d in provs.items() }
-        #pprint.pprint(dump)
-        # return
-        # call _asdict()
-        with open(self.dest, 'w') as f:
-            f.write(json.dumps(dump))

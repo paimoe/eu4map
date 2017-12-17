@@ -14,8 +14,8 @@ class IdeaParser(DataParser):
     output = 'output/_ideas.json'
     data = {}
 
-    def __init__(self):
-        super().__init__()
+    def __init__(self, test=False, **kwargs):
+        super().__init__(test=test, **kwargs)
 
         self.nationals = self.gamefilepath('common/ideas/00_country_ideas.txt')
         self.groups = self.gamefilepath('common/ideas/zz_group_ideas.txt')

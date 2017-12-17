@@ -39,7 +39,7 @@ class CountryParser(DataParser):
         self.allcountries = {}
 
         # get national ideas
-        ideas = IdeaParser()
+        ideas = IdeaParser(test=self.test)
         ideas.parse_all()
 
         # Check one
@@ -139,4 +139,3 @@ class CountryParser(DataParser):
                 if line.startswith('color'):
                     match = list(map(int, re.findall("(\d+)", line)))
                     return self.rgb_to_hex(*match)
-                    
