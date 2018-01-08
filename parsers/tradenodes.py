@@ -11,7 +11,7 @@ class TradenodeParser(DataParser):
 
     def __init__(self, test=False, **kwargs):
         super().__init__(test=test, **kwargs)
-        #raise Exception('Dont use tradenodes yet, todo: finish the oneline(separate=[]) part')
+
         self.nodes = self.gamefilepath('common/tradenodes/00_tradenodes.txt')
 
         self.internal = kwargs.get('internal', False)
@@ -27,6 +27,13 @@ class TradenodeParser(DataParser):
             return self.data[one]
 
         # Used in provinceparser to allocate each province to a trade node
+
+        # replace some colors cause they don't exist in the thing
+        # taken from: https://eu4.paradoxwikis.com/Trade_nodes
+        # https://eu4.paradoxwikis.com/images/f/f7/Trade_nodes_with_arrows.png
+        replacements = {
+            'aleppo': [120,148,140]
+        }
 
         # only save the name
         if not self.internal:
