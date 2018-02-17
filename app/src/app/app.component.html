@@ -1,20 +1,14 @@
 <!--The content below is only a placeholder and can be replaced.-->
 <div class="pure-g">
+    <!-- this should be its own component really -->
     <div class="pure-u-5-5">
         <h1 id="title">{{ title }}</h1>
-        <ul class="filterlist">
-            <li (click)="setFilters('none')">None</li>
-            <li (click)="setFilters('hre')">HRE</li>
-            <!--<li (click)="setFilters('religious', true)">Religious</li>-->
-        </ul>
-        <ul class="subfilterlist">
-            <!-- depends on what filter we're on -->
-        </ul>
+        <app-filters ></app-filters>
     </div>
 </div>
 <div class="pure-g">
     <div class="pure-u-3-4">
-      <app-map [appSettings]="settings" [filtersChanged]="filtersChanged" [redrawMap]="redrawMap" (onSelect)="provinceSelected($event)"></app-map>
+      <app-map [appSettings]="settings" [redrawMap]="redrawMap" (onSelect)="provinceSelected($event)"></app-map>
     </div>
     <div class="pure-u-1-4" style="background:#414141">
         <app-details [provinceID]="provinceID" (onSetting)="changeSetting($event)"></app-details>

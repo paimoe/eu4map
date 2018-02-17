@@ -16,11 +16,12 @@ export class AppComponent implements OnInit, OnChanges {
   settings = {};
   allowZoom = true;
   provinceID = 0;
-  filtersChanged = false;
+  //filtersChanged = false;
   redrawMap = false; // Sent to map component
+  loaded = false;
   
   data = {}; // data of all the stuff from the json @todo: needed?
-  data_src = {'paths': 'eu4map.json', 'provinces': 'provdata.json', 'countries': 'countries.json'};
+  data_src = {'paths': 'eu4map.json', 'provinces': 'provdata.json', 'countries': 'countries.json', 'tradenodes': 'tradenodes.json'};
   
   constructor(private http: HttpClient, public dataStore: DataService, public filters: Filters) {
     this.settings['allowZoom'] = true;
@@ -44,7 +45,9 @@ export class AppComponent implements OnInit, OnChanges {
       self.dataStore.paths = datas[0];
       self.dataStore.provinces = datas[1];
       self.dataStore.countries = datas[2];
+      self.dataStore.tradenodes = datas[3];
       
+      self.loaded = true;
       self.redrawMap = true;
       
     }, function(err) {
@@ -82,11 +85,12 @@ export class AppComponent implements OnInit, OnChanges {
     this.provinceID = provid;
   }
   
-  setFilters(choice, addsubfilter = false) {
+  setFilters(choice, value, addsubfilter = false) {
+    return;/*
     if (choice === 'none') {
       this.filters.reset();
     } else {
-      this.filters.toggle(choice);
+      this.filters.toggle(choice, value);
     }
     
     if (addsubfilter === true) {
@@ -96,6 +100,7 @@ export class AppComponent implements OnInit, OnChanges {
     
     this.filtersChanged = !this.filtersChanged; // toggle to force refresh
     //console.log('FILTERS', choice);
+    */
   }
   
 }

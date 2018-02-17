@@ -1,5 +1,5 @@
 <div id="details">
-    <h2>{{ selectedProvince.name }}</h2>
+    <h2>{{ selectedProvince.name }}#{{ selectedProvince.id }}</h2>
     <div [ngClass]="{'province':true, 'hre': selectedProvince.hre}">
         <div class="development">
             <div class="r">
@@ -11,6 +11,7 @@
         </div>
         <div class="development">
             <div class="r">
+                <!-- check if htese match the national ones -->
                 <div class="x" style="width:50%"><a href="#">{{ selectedProvince.religion }}</a></div>
                 <div class="x" style="width:50%"><a href="#">{{ selectedProvince.culture }}</a></div>
             </div>
@@ -22,8 +23,15 @@
             Claims: {{ selectedProvince.claims }}
         </div>
     </div>
-    <div class="country">
+    <div class="country" [hidden]="selectedProvince.wasteland || selectedProvince.ocean">
         <h2>{{ sCountry.name }}</h2>
+        <div class="development">
+            <div class="r">
+                <div class="x">{{ countryInfo.totalDev }} dev</div>
+                <div class="x">{{ sCountry.religion }}</div>
+                <div class="x">{{ sCountry.culture }}</div>
+            </div>
+        </div>
         <!-- x uncontrolled cores -->
     </div>
 </div>
