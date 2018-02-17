@@ -1,6 +1,7 @@
 import { Component, OnInit, Output, EventEmitter, Input, OnChanges, SimpleChanges } from '@angular/core';
 import * as d3 from 'd3';
 import { DataService, Filters } from '../app.services';
+import { Subscription } from 'rxjs/Subscription';
 
 @Component({
   selector: 'app-map',
@@ -18,19 +19,21 @@ export class MapComponent implements OnInit, OnChanges {
   @Input() appSettings;
   @Input() title: string;
   @Output() onSelect = new EventEmitter<number>();
-  @Input() filtersChanged;
+  //@Input() filtersChanged;
   @Input() redrawMap;
   
-  constructor(public dataStore: DataService, public filters: Filters) {
+  filtersub: Subscription;
+  
+  constructor(public dataStore: DataService, public _filters: Filters) {
   }
   
   ngOnChanges(changes: SimpleChanges) {
-    //console.log('map changes func',changes);
+    console.log('map changes func',changes);
     let key = Object.keys(changes)[0];
     if (key == 'filtersChanged') {
-      // Rerun filters
-      console.log('ngChanges on map', this.filters);
-      this.drawMap();
+      // Rerun _filters
+      console.log('ngChanges on map', this._filters);
+      //this.drawMap();
     } else if (key == 'redrawMap') {
       console.log('got redrawMap event');
       this.drawMap();
@@ -52,8 +55,20 @@ export class MapComponent implements OnInit, OnChanges {
     d3.select('#dragger').style('pointer-events', dragger);
     d3.selectAll('path').style('pointer-events', path);
   }
+  
+  filtersChanged(item) {
+    console.log('called filtersChanged')
+    this.drawMap();
+  }
+  
+  ngOnDestroy() {
+    this.filtersub.unsubscribe();
+  }
 
   ngOnInit() {
+    
+    //this.filtersub = this._filters.obsFilter.subscribe(item => this.filtersChanged(item))
+    console.log(this._filters.obsFilter);
     console.log('started the whatever');
     
     var width = 1500;
@@ -102,6 +117,11 @@ export class MapComponent implements OnInit, OnChanges {
         .call(zoom);
     
     var paths = svg.append('g').attr('id', 'paths');
+    
+    // Sub to filter changes
+    /*this.filtersub = this._filters.obsFilter.subscribe({
+      next: (item) => this.filtersChanged(item)
+    });*/
   }
   
   drawMap() {
@@ -113,6 +133,7 @@ export class MapComponent implements OnInit, OnChanges {
     var pathsdata = self.dataStore.paths;
     var countries = self.dataStore.countries; // not sure if needed
     var provinces = self.dataStore.provinces; // not sure if needed
+    var tradenodes = self.dataStore.tradenodes;
     
     for (let p in pathsdata) {
         if (pathsdata.hasOwnProperty(p)) {
@@ -156,6 +177,21 @@ export class MapComponent implements OnInit, OnChanges {
                 }
                 var color = '#' + c['color'];
             }
+            
+            // map modes
+            /*
+            if (self._filters.tradenodes === true) {
+              // get the node of this province
+              if (d['tradenode'] !== undefined) {
+                let node = tradenodes[d['tradenode']['name']];
+                //console.log('node', node)
+                if (node !== undefined && node['color'] !== undefined) {
+                  // Set this to the color
+                  var color = 'rgb(' + node['color'].join(',') + ')';
+                }
+              }
+            }*/
+            
             return 'fill: ' + color;
         })
         .attr('class', function(d) {
@@ -192,8 +228,8 @@ export class MapComponent implements OnInit, OnChanges {
           classes.push('psea');
       }
       
-      // Check filters and ignore any others if we're filtered out
-      if (this.filters.hre === true) {
+      // Check _filters and ignore any others if we're filtered out
+      if (this._filters.hre === true) {
         if (node['hre'] === true) {
           return classes.join(' ');
         } else {
@@ -202,6 +238,16 @@ export class MapComponent implements OnInit, OnChanges {
           }
           return classes.join(' ');
         }
+      }
+      if (this._filters.province_r) {
+        if (node['religion'] === this._filters.province_r) {
+          return classes.join(' ');
+        } else {
+          if (water === false && node['wasteland'] === false) {
+            classes.push('pinactive');
+          }
+        }
+        return classes.join(' ');
       }
 
       // Is it uncolonized?

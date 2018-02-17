@@ -46,6 +46,9 @@ path.hover {
 .filterlist li:hover {
     text-decoration: none;
 }
+.filterlist li.i {
+    text-decoration:none;
+}
 
 .subfilterlist {
     display:none;

@@ -8,12 +8,14 @@ import { DetailsComponent } from './details/details.component';
 
 import { HttpClientModule } from '@angular/common/http';
 import { DataService, Filters } from './app.services';
+import { FiltersComponent } from './filters/filters.component';
 
 @NgModule({
   declarations: [
     AppComponent,
     MapComponent,
-    DetailsComponent
+    DetailsComponent,
+    FiltersComponent
   ],
   imports: [
     BrowserModule,
