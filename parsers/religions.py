@@ -23,6 +23,9 @@ class ReligionParser(DataParser):
 
         # Parse formables
         #savedata = { x:d for x,d in self.data.items() }
+
+        # Ignore some keys for now, like papal actions/fervor etc
+
         self.save(parsed)
 
         return parsed

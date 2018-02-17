@@ -4,4 +4,19 @@ WASTELANDS = list(map(int, """2426 1173 1779 1781 1782 1783 1784 1785 1786 1787 
 # Seas and stuff, from map/region.txt
 SEAS = 'baltic_area,kattegat_area,north_sea_area,norwegian_sea_area,white_sea_area,celtic_sea_area,english_channel_area,bay_of_biscay_area,north_atlantic_area,denmark_strait_area,sea_of_labrador_area,hudson_bay_sea_area,gulf_of_st_lawrence_area,gulf_stream_area,eastern_mediterrenean_area,western_mediterrenean_area,black_sea_area,bahama_channel_area,coast_of_guyana_area,caribbean_sea_area,gulf_of_mexico_area,sargasso_sea_area,west_african_coast_sea_area,gulf_of_guinea_sea_area,western_indian_ocean_area,swahili_coast_sea_area,arabian_sea_area,persian_gulf_area,red_sea_area,eastern_indian_ocean_area,bay_of_bengal_area,andaman_sea_area,south_indian_ocean_area,java_sea_area,south_china_sea_area,celebes_sea_area,banda_arafura_seas_area,east_china_sea_area,philipine_sea_area,sea_of_japan_area,sea_of_okhotsk_area,east_pacific_ocean_area,coral_sea_area,tasman_sea_area,great_australian_bight_area,south_pacific_area,polynesian_triangle_area,north_pacific_area,north_pacific_coast_area,berring_sea_area,gulf_of_alaska_area,chilean_sea_area,sea_of_grau_area,gulf_of_panama_area,coast_of_brazil_sea_area,argentine_sea_area,south_atlantic_area,skeleton_coast_area,cape_of_storms_area'.split(',')
 
+LAKES = ''
+
 # Need to differentiate between seas and oceans (maybe)
+FORMABLES = {
+    #'TAG': [<provinces>]
+}
+
+RELEASEABLES = {
+    #'TAG': 
+}
+
+RELIGIONS = {
+    'group': {
+        'catholic': 'color'
+    }
+}

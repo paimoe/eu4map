@@ -31,23 +31,67 @@
     .pnobody {
         fill: DimGray !important;
     }
+    .filtered {
+        fill: black !important;
+    }
+    .pinactive {
+        fill: gray !important;
+    }
     </style>
 </head>
 <body>
-    <h1>menu</h1>
-    <h2 id="edit">
-        <input type="text" placeholder="id" class="id"/>
-        <input type="text" placeholder="name" class="name"/>
-        <input type="submit"/>
-    </h2>
+    <div class="pure-g">
+    <div class="pure-u-5-5">
+        <h1 id="title">eu4 map</h1>
+    </div>
+    </div>
+    <div class="pure-g">
+        <div class="pure-u-3-4">
+          <div id="svg"><svg></svg></div>
+        </div>
+        <div class="pure-u-1-4" style="display:none">
+            <p>Filters</p>
+            <p><a href="#" (click)="filter('hre')">only hre</a></p>
+            <div id="details">
+                <h2>{{ selectedProvince.name }}</h2>
+                <div [ngClass]="{'province':true, 'hre': selectedProvince.hre}">
+                    <table>
+                        <tr class="development">
+                            <td>{{ selectedProvince.tax }}</td>
+                            <td>{{ selectedProvince.prod }}</td>
+                            <td>{{ selectedProvince.man }}</td>
+                            <td>{{ selectedProvince.trade }}</td>
+                        </tr>
+                        <tr>
+                            <td colspan="2" style="width:50%"><a href="#">{{ selectedProvince.religion }}</a></td>
+                            <td colspan="2" style="width:50%"><a href="#">{{ selectedProvince.culture }}</a></td>
+                        </tr>
+                    </table>
+                    <div class="cores">
+                        {{ selectedProvince.cores }}
+                    </div>
+                    <div class="claims">
+                        {{ selectedProvince.claims }}
+                    </div>
+                </div>
+                <div class="country">
+                    
+                </div>
+            </div>
+        </div>
+    </div>
+    <h1>menu <a href="javascript:hre()">only hre</a></h1>
 <script src="https://d3js.org/d3.v4.min.js"></script>
 
 <script>
 
-function tileedit(d) {
-    document.querySelector('#edit input.id').value = d['id'];
-    document.querySelector('#edit input.name').value = d['n'];
+function hre() {
+    window.filters.hre = !window.filters.hre;
+    console.log('hre val', window.filters.hre);
+    drawMap();
 }
+
+window.filters = {'hre': false}
 
 /* TS: map.component.ts:ngOnInit */
 var width = 1500;
@@ -65,7 +109,7 @@ var svg = d3.select('body').append('svg')
 
     // Use switching for now :(
     .on('contextmenu', function(d) {
-        //d3.event.preventDefault();
+        d3.event.preventDefault();
         // Switch 
         let e = d3.select('#dragger');
         let paths = d3.selectAll('path');
@@ -108,96 +152,23 @@ let self = this;
 d3.json('/output/countries.json').get(function(error, countries) {
     if (error) throw error;
     console.log('loaded ' + countries.length + ' countries');
-    window.COUNTRIES = countries;
-
-    // Get country this belongs to
-    function country(tag) {
-        if (tag === null || tag === undefined) {
-            return false;
-        }
-        if (countries.hasOwnProperty(tag) === false) {
-            return false;
-        } 
-        return countries[tag];
-    };
+    window.countries = countries;
 
     // Get tile info
     d3.json('/output/provdata.json').get(function(error, provdata) {
         if (error) throw error;
         console.log('loaded info on ' + provdata.length + ' provinces');
 
+        window.provdata = provdata;
+
         // Assign to value
 
         d3.json(url).get(function(error, pathdata) {
             if (error) throw error;
             
-            /* TS */// self.data = data;
-            for (p in pathdata) {
-                if (pathdata.hasOwnProperty(p)) {
-                    let id = pathdata[p]['id'];
-                    pathdata[p] = Object.assign({}, pathdata[p], provdata[id]);
-                }
-            }
+            window.pathdata = pathdata;
 
-            // Global
-            let build = paths.selectAll('g')
-                .data(pathdata).enter()
-                .append('g')
-                .attr('transform', 'translate(0.000000,2048.000000) scale(0.100000,-0.100000)');
-
-            build.append('path')
-                .attr('id', (x) => 'province_' + x['id'])
-                .attr('d', (x) => x['d'])
-                .attr('style', function(d) {
-                    // If country exists                    
-                    let c = country(d['owner']);
-                    if (c === false) {
-                        color = 'gray';
-                    } else {
-                        if (!c['color']) {
-                            console.log('NO COLOR: ', c['name']);
-                        }
-                        color = '#' + c['color'];
-                    }
-                    return 'fill: ' + color;
-                })
-                .attr('class', function(d) {
-                    var classes = ['pn'];
-                    // Who owns it?
-
-                    // Is it wasteland?
-                    if (d['wasteland'] === true) {
-                        classes.push('pwaste');
-                    }
-
-                    // Is it ocean?
-                    if (d['sea'] === true || d['ocean'] === true) {
-                        classes.push('psea');
-                    }
-
-                    // Is it uncolonized?
-                    return classes.join(' ');
-                })
-
-                .on('mouseover', function(d) {
-                    d3.select(this).classed('hover', true);
-                })
-                .on('mouseout', function(d) {
-                    d3.select(this).classed('hover', false);
-                })
-                .on('click', function(d) {
-                    /* TS: *///self.clickDetail(d);
-                    console.log(d);
-                });
-
-            // Add text on top? and maybe a star for the capital?
-            /*build.append('text')
-                .text('This is text')
-                .attr('x', 0)
-                .attr('y', 0)
-                .style('fill', 'white')
-                ;
-            */
+            drawMap();
 
         });
 
@@ -205,6 +176,100 @@ d3.json('/output/countries.json').get(function(error, countries) {
 
 });
 /* TS: end map.component.ts:ngOnInit */
+
+/* TS: map.component.ts:drawMap */
+function drawMap() {
+
+    console.log('drawing map');
+    /* TS */// self.data = data;
+    for (p in pathdata) {
+        if (pathdata.hasOwnProperty(p)) {
+            let id = pathdata[p]['id'];
+            pathdata[p] = Object.assign({}, pathdata[p], provdata[id]);
+        }
+    }
+    //d3.selectAll('#paths g').remove();
+    // Global
+    let build = paths.selectAll('g')
+        .data(pathdata).enter()
+        .append('g')
+        .attr('transform', 'translate(0.000000,2048.000000) scale(0.100000,-0.100000)');
+
+    var path = build.append('path')
+        .attr('id', (x) => 'province_' + x['id'])
+        .attr('d', (x) => x['d'])
+        .on('mouseover', function(d) {
+            d3.select(this).classed('hover', true);
+        })
+        .on('mouseout', function(d) {
+            d3.select(this).classed('hover', false);
+        })
+        .on('click', function(d) {
+            /* TS: *///self.clickDetail(d);
+            console.log(d);
+        });
+
+    console.log(path)    
+    d3.selectAll('path').attr('style', function(d) {
+            // If country exists                    
+            let c = getCountry(d['owner']);
+            if (c === false) {
+                color = 'gray';
+            } else {
+                if (!c['color']) {
+                    console.log('NO COLOR: ', c['name']);
+                }
+                color = '#' + c['color'];
+            }
+            return 'fill: ' + color;
+        })
+        .attr('class', function(d) {
+            return provinceClass(d);
+        });
+}
+
+function getCountry(tag) {
+    if (tag === null || tag === undefined) {
+        return false;
+    }
+    if (countries.hasOwnProperty(tag) === false) {
+        return false;
+    } 
+    return countries[tag];
+}
+
+function provinceClass(node) {
+    let classes = ['pn'];
+      
+      // Who owns it?
+
+      // Is it wasteland?
+      if (node['wasteland'] === true) {
+          classes.push('pwaste');
+      }
+
+      // Is it ocean?
+      var water = false;
+      if (node['sea'] === true || node['ocean'] === true) {
+          var water = true;
+          classes.push('psea');
+      }
+      
+      // Check filters and ignore any others if we're filtered out
+      if (window.filters.hre === true) {
+        if (node['hre'] === true) {
+          return classes.join(' ');
+        } else {
+          if (water === false) {
+            classes.push('pwaste');
+          }
+          return classes.join(' ');
+        }
+      }
+
+      // Is it uncolonized?
+      return classes.join(' ');
+}
 
 /* TS: map.component.ts:zoomed */
 function zoomed() {
