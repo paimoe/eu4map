@@ -64,12 +64,20 @@ export class MapComponent implements OnInit, OnChanges {
   ngOnDestroy() {
     this.filtersub.unsubscribe();
   }
+  
+  test(item) {
+    console.log('TEST map component observable', item, this._filters);
+    // now get the current filters?
+    this.drawMap();
+  }
 
   ngOnInit() {
+    console.log('mapComponent ngOninit()');
+    this.filtersub = this._filters.obsFilter.subscribe(item => this.filtersChanged(item))
     
     //this.filtersub = this._filters.obsFilter.subscribe(item => this.filtersChanged(item))
-    console.log(this._filters.obsFilter);
-    console.log('started the whatever');
+    //console.log(this._filters.obsFilter);
+    //console.log('started the whatever');
     
     var width = 1500;
     var height = 700;
@@ -126,7 +134,10 @@ export class MapComponent implements OnInit, OnChanges {
   
   drawMap() {
     /* TS */// self.data = data;
-    console.log('DRAWING MAP');
+    if (this.dataStore.paths === undefined) {
+      return;
+    }
+    console.log('DRAWING MAP', this.dataStore.paths);
     let self = this;
     
     /* Get data from storage */

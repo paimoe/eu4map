@@ -99,7 +99,7 @@ class ProvinceParser(DataParser):
         prov = self.container()
         prov.id = pid
 
-        with open(fname, 'r') as fc:
+        with open(fname, 'r', encoding='latin-1') as fc:
             read = fc.read()
 
         parsed = self.oneline(read)

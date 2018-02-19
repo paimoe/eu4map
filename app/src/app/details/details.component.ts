@@ -61,6 +61,9 @@ export class DetailsComponent implements OnInit, OnChanges, OnDestroy {
     } else {
       this.sCountry = false;
     }
+
+    // check if is province
+    province['nonp'] = province.wasteland || province.ocean || province.sea;
     console.log('c', province);
     this.calculateTag(this.sCountry['tag']);
   }

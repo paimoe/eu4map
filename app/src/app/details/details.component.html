@@ -1,6 +1,6 @@
 <div id="details">
     <h2>{{ selectedProvince.name }}#{{ selectedProvince.id }}</h2>
-    <div [ngClass]="{'province':true, 'hre': selectedProvince.hre}">
+    <div [ngClass]="{'province':true, 'hre': selectedProvince.hre, 'ocean': selectedProvince.ocean, 'wl': selectedProvince.wasteland}" [hidden]="selectedProvince.nonp">
         <div class="development">
             <div class="r">
                 <div class="x">{{ selectedProvince.tax }}</div>
@@ -23,7 +23,7 @@
             Claims: {{ selectedProvince.claims }}
         </div>
     </div>
-    <div class="country" [hidden]="selectedProvince.wasteland || selectedProvince.ocean">
+    <div class="country" [hidden]="selectedProvince.nonp">
         <h2>{{ sCountry.name }}</h2>
         <div class="development">
             <div class="r">

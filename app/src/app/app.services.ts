@@ -53,22 +53,24 @@ export class Filters {
   
   // can we add a set/get and a toggle()? would be easier, and resetAll()
   reset() {
-    //console.log('resetting filters')
+    console.log('resetting filters!!!!')
     this.hre = this.releaseable = this.formable = false;
     this.province_r = this.province_c = this.country_r = this.country_c = '';
+
+    this._filters.next('calling next() in reset()')
   }
   
   toggle(choice, value) {
+    console.log('CHOICE TOGGLE', choice, this[choice], value, typeof(this[choice]));
     if (typeof this[choice] === "boolean") {
       this[choice] = !this[choice];
     } else if (typeof this[choice] == "string") {
       //console.log('setting filter', choice);
       this[choice] = value; 
     }
-    console.log('CHOICE TOGGLE', this[choice], value, typeof(this[choice]));
     
     // Ok updated our choices, now update observable?
-    this._filters.next('blah');
+    this._filters.next('_filters.next() value, now change the data');
   }
   
   exclusives = ['hre', 'tradenodes'];

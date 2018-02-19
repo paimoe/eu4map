@@ -21,7 +21,7 @@ export class FiltersComponent implements OnInit {
   }
   
   setFilter(choice, value = true, addsubfilter = false) {
-    //console.log('FilterComponent', choice, value);
+    console.log('FilterComponent', choice, value);
     if (choice === 'none') {
       this._filters.reset();
     } else {

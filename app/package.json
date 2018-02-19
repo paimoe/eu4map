@@ -22,7 +22,7 @@
     "@angular/platform-browser-dynamic": "^5.0.0",
     "@angular/router": "^5.0.0",
     "@reactivex/rxjs": "^5.5.5",
-    "@types/underscore": "^1.8.5",
+    "@types/underscore": "^1.8.7",
     "core-js": "^2.4.1",
     "d3": "^4.13.0",
     "rxjs": "^5.5.2",

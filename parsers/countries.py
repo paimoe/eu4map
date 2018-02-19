@@ -113,7 +113,7 @@ class CountryParser(DataParser):
                 print(line, sp)
                 raise
 
-        with open(os.path.join(fname), 'r') as fc:
+        with open(os.path.join(fname), 'r', encoding='latin-1') as fc:
             for cnt, line in enumerate(fc):
                 # 
                 if line.startswith(whitelist_starts):
@@ -134,7 +134,7 @@ class CountryParser(DataParser):
         return c
 
     def parse_color(self, fname):
-        with open(fname, 'r') as f:
+        with open(fname, 'r', encoding='latin-1') as f:
             for cnt, line in enumerate(f):
                 if line.startswith('color'):
                     match = list(map(int, re.findall("(\d+)", line)))

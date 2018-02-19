@@ -7,6 +7,7 @@ TODO
 """
 
 EU4_PATH = 'B:\SteamLibrary\steamapps\common\Europa Universalis IV'
+EU4_PATH = '/media/paimoe/3E3E95043E94B5FD/SteamLibrary/SteamApps/common/Europa Universalis IV'
 
 class Checksum(object):
 
@@ -212,6 +213,9 @@ class DataParser(object):
             with open(self.output, 'w') as f:
                 f.write(dump)
         else:
+            print("#" * 5)
+            print('Displaying generated data; not saving to file')
+            print("#" * 5)
             print(data)
 
     def gamefilepath(self, path):
