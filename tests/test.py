@@ -1,6 +1,7 @@
 import unittest
 import namedlist
-
+import sys
+print(sys.path)
 from parsers import *
 
 """
@@ -15,6 +16,7 @@ class EU4MapTest(unittest.TestCase):
         allpp = pp.parse_all(one=[1,124,134])
         rp = ReligionParser(test=True)
         tp = TradenodeParser(test=True)
+        sp = SavegameParser(test=True)
 
         # Country files
         cls.austria = cp.parse_all(one='HAB')
@@ -30,6 +32,9 @@ class EU4MapTest(unittest.TestCase):
 
         # tradenodes
         cls.tradenodes = tp.parse_all()
+
+        # Saves
+        #cls.saves = sp.parse()
 
 class TestCountryParser(EU4MapTest):
 
@@ -122,6 +127,8 @@ class TestTradenodes(EU4MapTest):
 
 
 class TestUI(EU4MapTest): pass
+
+class TestSaveParser(EU4MapTest): pass
 
 
 if __name__ == '__main__':

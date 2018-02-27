@@ -53,7 +53,7 @@ class ProvinceParser(DataParser):
 
         if one is not None:
             if not isinstance(one, list):
-                one = list(one)
+                one = [int(one)]
 
         self.allprovinces = {}
         self.areas = self.parse_areas()
@@ -62,19 +62,20 @@ class ProvinceParser(DataParser):
             for f in files:
                 if f.endswith('txt'):
                     if one is None or (one is not None and self.first_nums(f) in one):
-                        print('checking ', f)
+                        #print('checking ', f)
                         c = self.parse(os.path.join(root, f))
-
                         c = self.set_special(c)
 
                         # Get trade node
                         c.tradenode['name'] = tp.belongs_to(c.id) # color is in the tradenodes datafile
                         c.tradenode['main'] = tp.is_main(c.id)
 
+
                         self.allprovinces[int(c.id)] = c
 
         # Also get other parts
         # Get province name
+        #print(self.allprovinces)
         df = pd.read_csv(self.namesrc, sep=';', encoding='latin-1')
 
         for index, row in df.iterrows():

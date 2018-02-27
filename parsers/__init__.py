@@ -4,6 +4,7 @@ from .ui import  UIParser
 from .ideas import IdeaParser
 from .religions import ReligionParser
 from .tradenodes import TradenodeParser
+from .savegames import SavegameParser
 from .base import DataParser, EU4_PATH
 
 __all__ = [
@@ -14,5 +15,6 @@ __all__ = [
     'UIParser',
     'IdeaParser',
     'ReligionParser',
-    'TradenodeParser'
+    'TradenodeParser',
+    'SavegameParser'
 ]

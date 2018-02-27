@@ -38,22 +38,6 @@ def hex_to_rgb(hx):
     hx = hx.lstrip('#')
     return tuple(int(hx[i:i+2], 16) for i in (0, 2 ,4))
 
-"""
-class SVGParser(DataParser):
-
-    src = 'map6.svg'
-    dest = 'eu4map.json'
-
-    def __init__(self):
-        pass
-
-    def parse(self):
-        pass
-
-    def save(self):
-        pass
-"""
-
 def generate_svg_json():
     src = 'sources/output.svg'
     dest = 'output/eu4map.json'
@@ -156,6 +140,9 @@ if __name__ == '__main__':
         print('CSS Parser')
     elif opts.action == 'all':
         pass
+    elif opts.action == 'save':
+        sp = SavegameParser()
+        sp.parse()
 
     elif opts.action == 'check':
         print(os.path.exists(os.path.join(EU4_PATH, 'eu4.exe')))
