@@ -3,16 +3,10 @@ from timeit import default_timer as timer
 
 from decimal import Decimal
 
-"""
-TODO
-- map/terrain.txt, allow for { 1 2 3 4 5 etc}
-"""#
-
 # Temp fix for broken pipe when running `pipenv run python eu4map.py save | head -n 50`
 # https://stackoverflow.com/a/30091579
-from signal import signal, SIGPIPE, SIG_DFL
-signal(SIGPIPE, SIG_DFL) 
-
+#from signal import signal, SIGPIPE, SIG_DFL
+#signal(SIGPIPE, SIG_DFL) 
 
 EU4_PATH = 'B:\SteamLibrary\steamapps\common\Europa Universalis IV'
 EU4_PATH = '/media/paimoe/New Volume/BigSteamLibrary/steamapps/common/Europa Universalis IV'
@@ -279,7 +273,6 @@ class EU4JSON(json.JSONEncoder):
             return o.isoformat()
         return super().default(o)
 
-import inspect
 class DataParser_save(object): 
 
     cs = None
@@ -288,19 +281,16 @@ class DataParser_save(object):
     def __init__(self, test=False, **kwargs): 
         self.min_dt = datetime.datetime(1444, 11, 11)
         self.cs = Checksum()
-        self.dtre = re.compile("(\d{4})\.(\d+)\.(\d+)")
         self.test = test
+
+        self.match_date = re.compile('(\d{4})\.(\d+)\.(\d+)')
+        # Should match a list of numbers, including decimals and negatives
+        self.match_num_list = re.compile('^[\s\d\.\-]+$')
 
     def checksum(self): pass
     def load_file(self, fname, type='json'): pass # type = json/csv/custom?
 
     def save(self, data, stats=False):
-        def json_serial(obj):
-            """JSON serializer for objects not serializable by default json code"""
-
-            if isinstance(obj, (datetime.datetime, datetime.date)):
-                return obj.isoformat()
-            raise TypeError ("Type %s not serializable" % type(obj))
 
         if self.output is None:
             raise('No self.output set when calling save()')
@@ -310,7 +300,6 @@ class DataParser_save(object):
             self.cs.save(key, data)
 
         if self.test is False:
-            #dump = json.dumps(data, default=json_serial, cls=EU4JSON)
             dump = json.dumps(data, cls=EU4JSON)
             with open(self.output, 'w') as f:
                 f.write(dump)
@@ -342,132 +331,9 @@ class DataParser_save(object):
             l = l.partition('#')[0]
         l = l.strip()
         return l
-
-    # split the file into parts
-    def combine_eq(self, t, makelistkeys=[], toplist=False, seperate=[], *args, **kwargs):
-        """
-        makelistkeys: if any of these keys are encountered, compile into a list, will cast to int if isdigit() succeeds
-        toplist: combine multiple blocks into one, based on key. sometimes (ex history/diplomacy) we just need a top level list of everything
-        seperate: OBJ similar to toplist, don't combine these into one, trade nodes can have multiple outgoing={}
-
-        seperate2: if we have say multiple active_war, then calc them seperately and turn it into a list of them
-        """
-        has_key = None
-        use_val = False
-        group = {}
-        val = None
-
-        # accumulate quoted strings
-        quoted = []
-        makelist = None
-        makelistmulti = []
-
-        # combine into groups, surrounding the = sign
-        for part in t.split():
-            #print('=' * 30)
-            #print('PART', part)
-            if has_key is None and part not in ['=', '}'] and (part not in makelistkeys and makelist is None):
-                has_key = part
-                #print('setting key to ', has_key)
-                continue
-            elif has_key is not None and part == '=' and makelist is None:
-                #print('changing to set value')
-                use_val = True
-                continue            
-            elif part in makelistkeys or makelist is not None:
-                # for these keys, accumulate the numbers between the blocks
-                #print('makelistkey')
-                if makelist is None:
-                    has_key = part
-                    makelist = part # our future key
-                    continue
-                elif part == '}':
-                    use_val = True
-                    val = makelistmulti
-                    # probably cast to int?
-                    #print('close our makelistkey, with val', val)
-                elif part not in ['{', '=']:
-                    #print('appending ', part)
-                    if part.isdigit():
-                        part = int(part)
-                    makelistmulti.append(part)
-                    continue            
-            elif part == '}':
-                yield ('}', 'CONTROL_CLOSEBLOCK')
-                continue
-
-            if use_val:
-                #print('-' * 20)
-                # Check for quotes
-                if val is None:
-                    val = part
-                #print('val', part, part[0] == '"', part[-1:])
-                if '"' in part or len(quoted) > 0:
-                    # Deal with quoted strings
-                    if (part[0] == '"' and part[-1:] != '"') or (len(quoted) > 0 and part[-1:] != '"'):
-                        # Keep looping until we find the end of this string
-                        quoted.append(part)
-                        continue
-                    if part[-1:] == '"':
-                        # end of quoted string
-                        quoted.append(part)
-                        val = ' '.join(quoted)[1:-1].strip('"')
-                        quoted = []
-                # are we opening a block?
-                if val == '{' or has_key == '{':
-                    val = 'CONTROL_OPENBLOCK'
-
-                group[has_key] = val
-
-                val = self.clean_value(val)
-                #print('found val', has_key, val)
-
-                yield (has_key, val)
-                use_val = False
-                has_key = None
-                group = {}
-                makelist = None
-                makelistmulti = []
-                val = None
-
-    def _oneline(self, t, **kwargs):
-        # convert it to one line
-        # remove comments since they mess with me
-        nocomments = []
-
-        skip = kwargs.get('skip', [])
-        fixparts = kwargs.get('fixparts', {})
-
-        # ensure braces are spaced right
-        t = t.replace('}', ' } ').replace('{', ' { ').replace('=', ' = ')
-
-        for l in t.split("\n"):
-            if '#' in l:
-                l = l.partition('#')[0]
-            l = l.strip()
-
-            #
-            if l in skip:
-                continue
-
-            if l in fixparts:
-                #print(fixparts)
-                l = fixparts[l]
-
-            nocomments.append(l)
-        #print(nocomments[0:200])
-        back = "\n".join(nocomments)
-
-        builder = Builder(**kwargs)
-        #print(back)
-        for k,v in self.combine_eq(back, **kwargs):
-            builder.add(k, v)
-        #print(builder.data)
-        return builder.finalize()
-
+    
     rdepth = 0
     placeholders = {}
-    pholds = []
 
     def set_placeholder(self, txt):
         self.rdepth += 1
@@ -486,100 +352,21 @@ class DataParser_save(object):
             return s
 
         # Split string on first close brace, then backtrack
-        #while '}' in s:
         sp = s.split('}', maxsplit=1)
 
         init = sp[0]
 
         block = init.rsplit('{', maxsplit=1)
-        #print('=== block')
-        #print(block[-1])
 
-        #innermost = block[-1]
         innermost = block[1]
-        #print('vvinit', innermost)
-        # Replace with placeholder
 
-        #remainder_left = '{'.join(block[0:-1])
         remainder_left = block[0]
-        #print(remainder_left)
-        #print('======================')
 
         phkey = self.set_placeholder(innermost)
 
         remainder_right = sp[1]
-        #print('======================')
-        #print(remainder_right)
-        
+
         return remainder_left + phkey + remainder_right
-
-    def gen_BEFOREFIXINGBLANKSTRINGS(self, s):
-        # Run through string per character
-        # Generator
-        """
-        
-        """
-        k = None
-        v = None
-
-        reserved = ['{', '}', '=', '"']
-        ignore = ['EU4txt', '}']
-
-        subblock = False
-        collect = []
-
-        in_quote = False
-        quoted = []
-
-        for chars in s.split(' '):
-            # Skip ones we're filtering out
-            if chars.startswith('placeholder'):
-                v = self.resolve_placeholder(chars)
-
-            # Skip these
-            if chars in ignore:
-                continue
-
-            # We have no key, so probably need it
-            if k is None:
-                print('chars for key', chars)
-                k = self.clean_value(chars)
-            # We have a key, but no value, and this isn't a random thing
-            elif k is not None and v is None and chars not in reserved:
-                # Check if we're in a quote
-                if not in_quote and chars.startswith('"') and not chars.endswith('"'):
-                    #print('starting quote', chars)
-                    in_quote = not in_quote
-                    quoted.append(chars[1:])
-                    continue
-                elif in_quote and not chars.endswith('"'):
-                    #print('continueing quote', chars)
-                    quoted.append(chars)
-                    continue
-                elif in_quote and chars.endswith('"'):
-                    quoted.append(chars[0:-1])
-                    chars = ' '.join(quoted)
-                    #print('ending quote', chars)
-                    quoted = []
-                    in_quote = False
-
-                v = self.clean_value(chars)
-            
-            if k is not None and v is not None:
-
-                # Cast
-                v = self.clean_value(v)
-
-                # Dictify if necessary
-                if isinstance(v, (list, tuple)):
-                    v = self.dictify(v)
-
-
-
-                yield (k, v)
-
-                k = None
-                v = None
 
     def gen(self, s):
         # Run through string per character
@@ -642,10 +429,7 @@ class DataParser_save(object):
                 if isinstance(v, (list, tuple)):
                     v = self.dictify(v)
 
-
                 if isinstance(k, (datetime.datetime, datetime.date)):
-                    #print('ASSSSSSSSSSSSSSSss')
-                    #print(k, type(k))
                     # Cast keys that are datetimes to string, so our json encode works (plus we don't need them as dts really)
                     k = k.isoformat()
 
@@ -656,14 +440,7 @@ class DataParser_save(object):
 
     def oneline(self, t, **kwargs):
         """
-        problems:
-
-        - i loop the whole thing thousands of times
-        - then loop it again to replace the placeholders
-        - then loop it again to turn into k/v
-        - also recursively dictify the values
         """
-        i = 0
         skip = kwargs.get('skip', [])
         fixparts = kwargs.get('fixparts', {})
 
@@ -683,6 +460,7 @@ class DataParser_save(object):
         # single quotes (for peoples names: Kai-Ka'us)
         simple_braces = re.compile('\{([\w\s\"\.\=\-\']*?)\}')
         # Replace each match with a built in placeholder
+        # Loop until we have no more matches
         while '{' in t:
             nt = simple_braces.sub(magic_replace, t)
 
@@ -690,33 +468,21 @@ class DataParser_save(object):
                 break
 
             t = nt
-        #print(t)
 
         print('COUNT BRACES AFTER REGEX')
         print(t.count('}'), t.count('{'))
         # Reduce it to placeholders
-        #print(t[150000:250000])
-        #assert False
+
+        # Use string manipulation for the remainder
         while '{' in t:
             #print('len', len(t))
             t = self.gen2(t)
 
         # Now parse through t, while replacing the placeholders
         comp = {}
-        k = 0
-        for  k, char in self.gen(t):
-            i+= 1
-            if k == 'FAD':
-                pprint.pprint(char)  
-
+        for k, char in self.gen(t):
             comp[k] = char
 
-
-            
-
-            #if i == 15: break
-        #assert False
-        #assert False
         # Convert list of tuples into dictionary
         return comp
 
@@ -734,18 +500,12 @@ class DataParser_save(object):
             #print('normal', ph)
             v = self.gen(ph)
             v = list(map(self.clean_value, v))
-            if phkey == 'placeholder103':
-                print()
-                #print('PARSE THIS2', list(v))
-                print()
         elif ph.replace(" ", "").isdigit():
             # Contains only numbers or spaces or decimals (just numbers for now, parse decimals later)
             v = self.parse_number_list(ph)
         elif ph.replace(" ", "").isalnum():
             # Probably a list of say tags, just straight text
             # But might also be placeholders
-
-            #print('PHHHHHHHHH', ph.replace(" ", "").isalnum())
             stack = []
 
             for val in filter(lambda x: len(x) > 0, ph.split(' ')):
@@ -796,8 +556,7 @@ class DataParser_save(object):
             comp = { k:None for k, v in obj }
             #print('testcomp', comp)
             for _, item in enumerate(obj):
-                #print('type', type(item))
-                #print('zbop', item)
+                #print('type', item, type(item))
                 if comp[item[0]] is None:
                     comp[item[0]] = item[1]
                 elif not isinstance(comp[item[0]], list):
@@ -808,14 +567,6 @@ class DataParser_save(object):
                 if item[0] == 'ledger_data':
                     #print(comp)
                     pass
-
-            #comp = dict(obj)
-            #comp = dict(obj)
-            #elif isinstance(test, list):
-            #    comp[item[0]] = self.dictify(item[1])
-        #print(comp)
-        #assert False
-        #print('OBJ', type(test), comp)
 
         return comp if comp != {} else obj
 
@@ -863,9 +614,6 @@ class DataParser_save(object):
                 num = s
         return num
 
-    match_date = re.compile('(\d{4})\.(\d+)\.(\d+)')
-    # Should match a list of numbers, including decimals and negatives
-    match_num_list = re.compile('^[\s\d\.\-]+$')
     def clean_value(self, val): 
         #print('cleaning ', val)
         if isinstance(val, str):
