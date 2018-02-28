@@ -1,8 +1,8 @@
 import json
 
-from parsers.base import DataParser
+from parsers.base import DataParser_save
 import pprint
-class TradenodeParser(DataParser):
+class TradenodeParser(DataParser_save):
     """
     
     """
@@ -21,7 +21,7 @@ class TradenodeParser(DataParser):
 
         with open(self.nodes, 'r') as fc:
             read = fc.read()
-        self.data = self.oneline(read, makelistkeys=['path', 'color', 'control', 'members'], seperate={'outgoing': ['name', 'path', 'control']})
+        self.data = self.oneline(read)
 
         if one is not None:
             return self.data[one]

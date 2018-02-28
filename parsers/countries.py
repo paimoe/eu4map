@@ -1,4 +1,4 @@
-from parsers.base import DataParser
+from parsers.base import DataParser, DataParser_save
 import json, os, re
 import namedlist
 
@@ -6,7 +6,7 @@ from .ideas import IdeaParser
 
 import constants, renames
 
-class CountryParser(DataParser):
+class CountryParser(DataParser_save):
 
     output = 'output/countries.json'
 

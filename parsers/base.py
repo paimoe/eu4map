@@ -1,4 +1,4 @@
-import json, hashlib, datetime, os, itertools, re, collections, pprint
+import json, hashlib, datetime, os, itertools, re, collections, pprint, sys
 from timeit import default_timer as timer
 
 from decimal import Decimal
@@ -210,7 +210,7 @@ class Builder(object):
 
         @todo: still bad, have to find a way to parse the blocks with multiple keys of the same name cleanly, since we rely on lu ck to match it up
         """
-        print('finalize', self.build_list_of_objects)
+        #print('finalize', self.build_list_of_objects)
         if self.build_list_of_objects is True:
             # Wrap up this if it ends in a list building
             # ez
@@ -260,7 +260,6 @@ class Builder(object):
 
 
         return self.data
-import re, pprint
 
 class EU4JSON(json.JSONEncoder):
     def default(self, o):
@@ -287,9 +286,6 @@ class DataParser_save(object):
         # Should match a list of numbers, including decimals and negatives
         self.match_num_list = re.compile('^[\s\d\.\-]+$')
 
-    def checksum(self): pass
-    def load_file(self, fname, type='json'): pass # type = json/csv/custom?
-
     def save(self, data, stats=False):
 
         if self.output is None:
@@ -298,16 +294,44 @@ class DataParser_save(object):
         if stats is True and self.test is False:
             key = self.output.partition('.')[0]
             self.cs.save(key, data)
-
+ 
         if self.test is False:
             dump = json.dumps(data, cls=EU4JSON)
             with open(self.output, 'w') as f:
                 f.write(dump)
         else:
-            print("#" * 5)
-            print('Displaying generated data; not saving to file')
-            print("#" * 5)
-            print(data)
+            # Don't print debug/anything if we're running tests
+            if sys.argv[0] != 'tests/test.py':
+                print("#" * 5)
+                print('Displaying generated data; not saving to file')
+                print("#" * 5)
+                print(data)
+
+    def save_data(self, key, data):
+        """
+        Save small datapoint into output/data/x (for example, grouped list of religions) and re-compiled
+        """
+        dest = 'output/data/{0}.json'.format(key)
+        compile_dest = 'output/data/_all.json'
+
+        if self.test is False:
+            dump = json.dumps(data, cls=EU4JSON)
+
+            with open(dest, 'w') as f:
+                f.write(dump)
+
+            # Rebuild  
+            print('Re-compiling data files')
+            compiled = {}          
+            for root, dirs, files in os.walk('output/data'):
+                for f in files:
+                    if f.endswith('.json') and f != '_all.json':
+                        with open(os.path.join(root, f), 'r') as reader:
+                            fname = f.partition('.')[0]
+                            compiled[fname] = json.loads(reader.read())
+
+            with open(compile_dest, 'w') as f:
+                f.write(json.dumps(compiled, cls=EU4JSON))
 
     def gamefilepath(self, path):
         fp = os.path.join(EU4_PATH, *path.split(os.path.sep))
@@ -444,6 +468,16 @@ class DataParser_save(object):
         skip = kwargs.get('skip', [])
         fixparts = kwargs.get('fixparts', {})
 
+        # Remove comments
+        cleaned = []
+        for line in t.split("\n"):
+            if '#' in line:
+                p = line.partition('#')
+                cleaned.append(p[0])
+            else:
+                cleaned.append(line)
+        t = "\n".join(cleaned)
+
         t = t.replace('}', ' } ').replace('{', ' { ').replace('=', ' = ').replace("\n", " ")
 
         # Remove multiple spaces
@@ -469,8 +503,8 @@ class DataParser_save(object):
 
             t = nt
 
-        print('COUNT BRACES AFTER REGEX')
-        print(t.count('}'), t.count('{'))
+        #print('COUNT BRACES AFTER REGEX')
+        #print(t.count('}'), t.count('{'))
         # Reduce it to placeholders
 
         # Use string manipulation for the remainder
@@ -691,10 +725,11 @@ class DataParser(object):
             with open(self.output, 'w') as f:
                 f.write(dump)
         else:
-            print("#" * 5)
+            pass
+            #print("#" * 5)
             print('Displaying generated data; not saving to file')
-            print("#" * 5)
-            print(data)
+            #print("#" * 5)
+            #print(data)
 
     def gamefilepath(self, path):
         fp = os.path.join(EU4_PATH, *path.split(os.path.sep))
@@ -854,187 +889,3 @@ class DataParser(object):
                 val = list(map(lambda x: x.strip('"'), val))
         return val
 
-class DataParser_old(object): 
-
-    cs = None
-
-    def __init__(self): 
-        self.min_dt = datetime.datetime(1444, 11, 11)
-        self.cs = Checksum()
-
-    def checksum(self): pass
-    def load_file(self, fname, type='json'): pass # type = json/csv/custom?
-    def save(self): pass
-
-    def gamefilepath(self, path):
-        fp = os.path.join(EU4_PATH, *path.split(os.path.sep))
-        assert os.path.exists(fp), "File {0} does not exist in EU4 directory".format(path)
-        return fp 
-
-    def first_nums(self, x):
-        return int("".join(itertools.takewhile(str.isdigit, x)))
-    def rgb_to_hex(self, red, green, blue):
-        """Return color as #rrggbb for the given color values."""
-        return '%02x%02x%02x' % (red, green, blue)
-    def hex_to_rgb(self, hx):
-        hx = hx.lstrip('#')
-        return tuple(int(hx[i:i+2], 16) for i in (0, 2 ,4))
-
-    def format_date(self, dt):
-        return dt.strftime('%Y-%m-%d')
-
-    def remove_comment_line(self, l):
-        if '#' in l:
-            l = l.partition('#')[0]
-        l = l.strip()
-        return l
-
-    def parse_file_generator(self, fname):
-        # open, create a generator
-        with open(os.path.join(fname), 'r') as fc:
-            # Get line
-            braces = 0
-            building = False
-            build_multi = []
-            for cnt, line in enumerate(fc):
-
-                line = self.remove_comment_line(line.strip())
-                if line == '':
-                    continue
-
-                # normalize whitespace
-                line = ' '.join(line.replace('{', ' { ').replace('}', ' } ').split())
-                print('new line', braces,  line)
-                
-                # if we're building multiline, then just add this line and continue until we hit the last }
-                # TODO: nested multi builds, basically just building a single line thing
-                # TODO: quotes around some values, like dynasty = "von Habsburg"
-                if building is True:
-                    if '{' in line:
-                        braces += line.count('{')
-                        continue
-                        
-                    build_multi.append(line.replace(' = ', '='))
-                    print('BUILDING: ', braces, build_multi)
-                    braces += line.count('{')
-                    if '}' not in line:
-                        continue
-
-                    if '}' in line:
-                        braces -= line.count('}')
-                        if braces == 0:
-                            line = ' '.join(build_multi)
-                            building = False
-                            build_multi = []
-                            braces = 0
-                            yield self.parse_line_block(line)
-                        else:
-                            continue
-                
-                if '{' in line or line.endswith('}') or building is True:
-
-                    # we opening a block
-                    # check if its single line
-                    if line.count('{') == line.count('}') and building is False:
-                        # single line block
-                        # Get first up to equals
-                        d = line.split(' = ')
-                        key = d.pop(0)
-                        #print('ass',key, '='.join(d))
-                        rest = '='.join(d)
-
-                        # convert key to dt?
-                        dtkey = re.search("(\d{4})\.(\d+)\.(\d+)", key)
-                        if dtkey is not None:
-                            key = datetime.datetime(*list(map(int, dtkey.groups())))
-
-
-                        z = (key, self.parse_line_block(rest)['obj'])
-                        #print('zzzzz', z)
-                        yield z
-                    else:
-                        # begin mulitline
-                        braces += line.count('{') - line.count('}')
-                        print('braces', braces, line)
-                        building = True
-                        build_multi.append(line)
-                        continue
-                else:
-                    sp = line.split('=')
-                    #print(sp)
-                    try:
-                        yield (sp[0].strip(), sp[1].strip())
-                    except IndexError:
-                        yield line
-
-    # brutal
-    def parse_line_block(self, line):
-        """
-        if is char:
-            appendnewkey_or_value, continue
-
-        if is = 
-            closekey, open value, continue
-
-        if is space
-            close value, continue, open key
-
-        if is {
-            open block
-
-        if is }
-            close block
-        """
-        ourobj = {}
-        n = ['',''] # temp k,v store
-        setting_which = 0 # position in tuple `n` that we're setting, flip when we go from key to val
-        line = line.strip().lstrip('{')
-
-        skip_until = 0
-        len_used = 0
-        for pos, v in enumerate(line.strip()):
-            #print(pos,v)
-            len_used += 1
-            if pos < skip_until:
-                continue
-
-            if v.isalpha() or v.isdigit() or v == '_':
-                n[setting_which] += v
-                #print('adding to ', setting_which, v)
-                continue
-
-            if v == '=':
-                setting_which = 1 - setting_which
-                #print('changing setting to ', setting_which)
-                continue
-
-            if v == ' ':
-                setting_which = 0
-                ourobj[n[0]] = n[1]
-                #print('ourobj', ourobj)
-                n = ['', '']
-                continue
-
-            if v == '{':
-                # new block
-                nline = line.strip()[pos:]
-                p = self.parse_line_block(nline)
-                #print('this', n[0], nline, pos, p['obj'])
-                n[1] = p['obj']
-                #print(n)
-                # skip ahead the length of  the used string
-                skip_until = pos + p['len'] + 1
-                #print('skipping', skip_until, line[skip_until:])
-                continue
-
-            if v == '}':
-                break
-            #print(n)
-        # in case we have leftovers
-        if n != ['', '']:
-            ourobj[n[0]] = n[1]
-
-        return {
-            'len': len_used,
-            'obj': ourobj
-        }

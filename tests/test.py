@@ -1,7 +1,6 @@
 import unittest
 import namedlist
-import sys
-print(sys.path)
+
 from parsers import *
 
 """
@@ -120,7 +119,7 @@ class TestTradenodes(EU4MapTest):
         self.assertEqual(venice['color'], [54, 167, 156])
         self.assertTrue(venice['end'])
         self.assertEqual(len(venice['members']), 23)
-        self.assertEqual(len(venice['outgoing']), 0)
+        self.assertFalse('outgoing' in venice)
         self.assertEqual(venice['location'], 1308)
     def test_normal(self):
         pass
