@@ -16,10 +16,13 @@ export class DetailsComponent implements OnInit, OnChanges, OnDestroy {
   @Output() onFilter = new EventEmitter();
   @Input() provinceID: number = 0;
   selectedProvince = {};
+  sp = {}; // just a shorthand
   sCountry = {};
   countryInfo = {};
   
   filtersub: Subscription;
+
+  //data-tooltip: any;
   
   constructor(public dataStore: DataService, public _filters: Filters) { }
   
@@ -54,7 +57,13 @@ export class DetailsComponent implements OnInit, OnChanges, OnDestroy {
   showDetail() {
     // Hopefully it exists
     let province = this.dataStore.provinces[this.provinceID];
+
+    // Flatten since our parser is trash
+    province['cores'] = [].concat(...province['cores'])
+    // Primary core first
+
     this.selectedProvince = province;
+    this.sp = province;
     if (province.owner !== null) {
       let country = this.dataStore.countries[province.owner];
       this.sCountry = country;
@@ -68,7 +77,12 @@ export class DetailsComponent implements OnInit, OnChanges, OnDestroy {
     this.calculateTag(this.sCountry['tag']);
   }
   
-  filter(type) {/*
+  filter(which, val) {
+    console.log('Setting filter', which, val);
+    this._filters.toggle(which, val);
+  /*
+
+    call setFilter() on filtercomponent?
     console.log('filter by this type', type)
     if (typeof this.filters[type] === "boolean") {
       this.filters[type] = !this.filters[type];

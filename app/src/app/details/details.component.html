@@ -1,26 +1,27 @@
-<div id="details">
-    <h2>{{ selectedProvince.name }}#{{ selectedProvince.id }}</h2>
+<!--<div id="details" [hidden]="!_filters.selectedProvince">-->
+    <div id="details">
+    <h2>{{ selectedProvince.name }}<span>#{{ selectedProvince.id }}</span></h2>
     <div [ngClass]="{'province':true, 'hre': selectedProvince.hre, 'ocean': selectedProvince.ocean, 'wl': selectedProvince.wasteland}" [hidden]="selectedProvince.nonp">
         <div class="development">
             <div class="r">
-                <div class="x">{{ selectedProvince.tax }}</div>
-                <div class="x">{{ selectedProvince.prod }}</div>
-                <div class="x">{{ selectedProvince.man }}</div>
-                <div class="x">{{ selectedProvince.trade }}</div>
+                <div class="xi"><img src="/assets/i/Tax_income.png" />{{ selectedProvince.tax }}</div>
+                <div class="xi"><img src="/assets/i/Production.png" />{{ selectedProvince.prod }}</div>
+                <div class="xi"><img src="/assets/i/Manpower.png" />{{ selectedProvince.man }}</div>
+                <div class="xi" (click)="filter('tradegood', selectedProvince.trade)" data-tooltip="Show provinces with this trade good">{{ selectedProvince.trade }}</div>
             </div>
         </div>
         <div class="development">
             <div class="r">
                 <!-- check if htese match the national ones -->
-                <div class="x" style="width:50%"><a href="#">{{ selectedProvince.religion }}</a></div>
-                <div class="x" style="width:50%"><a href="#">{{ selectedProvince.culture }}</a></div>
+                <div class="x" style="width:50%"><a href="#" (click)="filter('province_r', selectedProvince.religion)" class="tooltip-right" data-tooltip="Provinces with this religion">{{ selectedProvince.religion }}</a></div>
+                <div class="x" style="width:50%"><a href="#" (click)="filter('province_c', selectedProvince.culture)" class="tooltip-right" data-tooltip="Provinces with this culture">{{ selectedProvince.culture }}</a>/cgroup</div>
             </div>
         </div>
         <div class="cores">
-            Cores: {{ selectedProvince.cores }}
+            Cores: <span *ngFor="let core of selectedProvince.cores"><img src="/assets/i/flags/{{ core }}.png" [attr.data-tooltip]="'Core of ' + core" class="flag32 down"/></span>
         </div>
         <div class="claims">
-            Claims: {{ selectedProvince.claims }}
+            Claims: <span *ngFor="let core of sp.claims"><img src="/assets/i/flags/{{ core }}.png" [attr.data-tooltip]="'Claim of ' + core" class="flag32 down"/></span>
         </div>
     </div>
     <div class="country" [hidden]="selectedProvince.nonp">
@@ -28,10 +29,27 @@
         <div class="development">
             <div class="r">
                 <div class="x">{{ countryInfo.totalDev }} dev</div>
-                <div class="x">{{ sCountry.religion }}</div>
-                <div class="x">{{ sCountry.culture }}</div>
+                <div class="x">
+                    <a href="#" class="tooltip-right" data-tooltip="Countries with this religion">{{ sCountry.religion }}</a>
+                </div>
+                <div class="x">
+                    <a href="#" class="tooltip-right" data-tooltip="Countries with this culture">{{ sCountry.culture }}</a>
+                </div>
             </div>
         </div>
         <!-- x uncontrolled cores -->
     </div>
+</div>
+
+<!-- div for displaying details about the filtered object -->
+<div id="filterdetails" [hidden]="_filters.selectedProvince">
+    <h2>MAP DEETAILS</h2>
+</div>
+
+<div id="listDetails" [hidden]="!_filters.selectedList">
+    <h3>Arbitrary Lists</h3>
+</div>
+
+<div class="credits">
+    <p>EU4Map &middot; 2018 &middot; <a href="https://github.com/paimoe/eu4map">github</a></p>
 </div>

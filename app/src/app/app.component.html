@@ -1,9 +1,6 @@
-<!--The content below is only a placeholder and can be replaced.-->
 <div class="pure-g">
-    <!-- this should be its own component really -->
     <div class="pure-u-5-5">
-        <h1 id="title">{{ title }}</h1>
-        <app-filters ></app-filters>
+        <app-filters [loadedReceiver]="loaded"></app-filters>
     </div>
 </div>
 <div class="pure-g">

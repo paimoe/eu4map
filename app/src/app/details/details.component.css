@@ -1,13 +1,17 @@
 #details {
     margin: 0 10px;
     border: 1px solid #c3c3c3;
-    border-radius: 10px;
+    border-radius: 0 0 10px 10px;
     padding: 10px;
     background:white;
 }
 #details h2 {
     margin-top:0;
     text-align:center;
+}
+#details h2 span {
+    color: #eee;
+    font-size:80%;
 }
 
 #details .province, #details .country {
@@ -48,11 +52,42 @@
     display:table-row;
     justify-content:space-between;
 }
-.development div.x {
+.development div.x, div.xi {
     display:table-cell;
     width:25%;
     padding:5px;
     background:#d1cfe4;
     border: 1px solid #584dc3;
     border-radius: 5px;
+    padding-top:0;
+}
+.development div.x {
+    padding: 5px;
+}
+
+.xi img {
+    width:24px;
+    height:24px;
+    position:relative;
+    top:5px;
+    margin-right:5px;
+}
+
+img.down {
+    position:relative;
+    top:5px;
+    margin-right:5px;
+}
+
+.credits {
+    border-top: 1px solid #878383;
+    margin:10px;
+    text-align:center;
+    color: #b6b0b0;
+    font-size:90%;
+
+    text-shadow: 1px 1px 0 #000; 
+}
+.credits a {
+    color: #b6b0b0;
 }

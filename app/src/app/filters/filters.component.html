@@ -1,14 +1,29 @@
 <ul class="filterlist">
-    <li (click)="setFilter('none')">None</li>
-    <li (click)="setFilter('hre')">HRE</li>
-    <li (click)="setFilter('province_r','sunni')">SunniP</li>
-    <li (click)="setFilter('province_r','catholic')">Catholic</li>
-    <li (click)="setFilter('province_r','shiite')">Shia</li>
-    <li (click)="setFilters('tradenodes')">Trade</li>
-    <!--<li (click)="setFilters('country_r','sunni')">SunniC</li>-->
-    <!--<li (click)="setFilters('religious', true)">Religious</li>-->
+    <li class="label">FILTERS</li>
+    <li class="reset" (click)="setFilter('none')">RESET</li>
+    <li (click)="setFilter('hre')" class="u">HRE</li>
+    <li (click)="filterType('religion')" class="u">Religions</li>
+    <li (click)="setFilters('tradenodes')" class="u">Trade</li>
     <li class="i"><small>Right click to switch between pan/select</small></li>
+    <!-- pull this right -->
+	<li class="filterswitches">
+		<div>
+			<a href="#p" (click)="setTarget('provinces')" [ngClass]="{'active': opts.target == 'provinces', 'tooltip-bottom': true}" data-tooltip="Apply filters per province">Provinces</a>
+			<a href="#c" (click)="setTarget('countries')" [ngClass]="{'active': opts.target == 'countries', 'tooltip-bottom': true}" data-tooltip="Apply filters per country">Countries</a>
+		</div>
+        <div>
+            <a href="#" (click)="setOption('include_wasteland')" [ngClass]="{'active': opts.include_wasteland, 'tooltip-bottom': true}" data-tooltip="Include uncolonized/wasteland">+Wasteland</a>
+        </div>
+	</li>
 </ul>
-<ul class="subfilterlist">
+<div class="subfilterlist">
     <!-- depends on what filter we're on -->
-</ul>
+    <div id="filter_religions" [hidden]="type != 'religion'">
+    	<ul *ngFor="let rgroup of religiongroups">
+		    <li><b>{{ rgroup }}</b></li>
+            <li *ngFor="let r of religions[rgroup]">
+                <span (click)="setFilter('province_r', r[1])">{{ r[0] }}</span>
+            </li>
+		</ul>         
+    </div>
+</div>

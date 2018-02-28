@@ -8,6 +8,7 @@ export class DataService {
   countries: any;
   paths: any;
   tradenodes: any;
+  game: any;
 }
 
 @Injectable() 
@@ -16,8 +17,8 @@ export class Filters {
   This stores the data, and loads it. when it changes, the observables are updated.
   FilterComponent only reads, and calls set()/reset() etc
   */
-  
-  
+ 
+   
   // Where we store our info, when it changes, it sends out events
   private _filters = new BehaviorSubject<any>(null);
   // Observable navItem stream
@@ -31,6 +32,9 @@ export class Filters {
   on(which) {
     // return whether this is enabled or not
   }
+
+  showingFiltered: boolean = false;
+  selectedProvince: any = 0;
   
   // map modes
   hre: boolean = false;
@@ -50,6 +54,7 @@ export class Filters {
   // cultures
   province_c: string = '';
   country_c: string = '';
+
   
   // can we add a set/get and a toggle()? would be easier, and resetAll()
   reset() {
@@ -62,15 +67,19 @@ export class Filters {
   
   toggle(choice, value) {
     console.log('CHOICE TOGGLE', choice, this[choice], value, typeof(this[choice]));
-    if (typeof this[choice] === "boolean") {
-      this[choice] = !this[choice];
-    } else if (typeof this[choice] == "string") {
-      //console.log('setting filter', choice);
-      this[choice] = value; 
+    if (choice === 'none') {
+      this.reset();
+    } else {
+      if (typeof this[choice] === "boolean") {
+        this[choice] = !this[choice];
+      } else if (typeof this[choice] == "string") {
+        //console.log('setting filter', choice);
+        this[choice] = value; 
+      }
+      
+      // Ok updated our choices, now update observable?
+      this._filters.next('_filters.next() value, now change the data');
     }
-    
-    // Ok updated our choices, now update observable?
-    this._filters.next('_filters.next() value, now change the data');
   }
   
   exclusives = ['hre', 'tradenodes'];
@@ -80,5 +89,19 @@ export class Filters {
   
   set(k, v) {
     
+  }
+
+  selected(provinceid) {
+    // we clicked on a provinced
+    console.log('filtersComponent selected()', provinceid);
+    this.selectedProvince = provinceid;
+    this._filters.next('selectedProvince');
+  }
+
+  showFilterDetails(which) {
+    // Send thing out to the details menu
+    this.showingFiltered = true;
+    this.selectedProvince = 0;
+    this._filters.next('showFilterDetails' + which);
   }
 }

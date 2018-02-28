@@ -28,6 +28,7 @@ export class MapComponent implements OnInit, OnChanges {
   }
   
   ngOnChanges(changes: SimpleChanges) {
+    console.log('datastore', this.dataStore)
     console.log('map changes func',changes);
     let key = Object.keys(changes)[0];
     if (key == 'filtersChanged') {
@@ -57,18 +58,12 @@ export class MapComponent implements OnInit, OnChanges {
   }
   
   filtersChanged(item) {
-    console.log('called filtersChanged')
+    console.log('called filtersChanged', item)
     this.drawMap();
   }
   
   ngOnDestroy() {
     this.filtersub.unsubscribe();
-  }
-  
-  test(item) {
-    console.log('TEST map component observable', item, this._filters);
-    // now get the current filters?
-    this.drawMap();
   }
 
   ngOnInit() {
@@ -125,11 +120,6 @@ export class MapComponent implements OnInit, OnChanges {
         .call(zoom);
     
     var paths = svg.append('g').attr('id', 'paths');
-    
-    // Sub to filter changes
-    /*this.filtersub = this._filters.obsFilter.subscribe({
-      next: (item) => this.filtersChanged(item)
-    });*/
   }
   
   drawMap() {
@@ -260,6 +250,18 @@ export class MapComponent implements OnInit, OnChanges {
         }
         return classes.join(' ');
       }
+      if (this._filters.province_c) {
+        if (node['culture'] === this._filters.province_c) {
+          return classes.join(' ');
+        } else {
+          if (water === false && node['wasteland'] === false) {
+            classes.push('pinactive');
+          }
+        }
+        return classes.join(' ');
+      }
+      // tradegood
+      // country_r/c
 
       // Is it uncolonized?
       return classes.join(' ');
@@ -278,6 +280,7 @@ export class MapComponent implements OnInit, OnChanges {
   
   clickDetail(d) {
     // Send d.id up to App, then over to detail
+    this._filters.selected(d.id);
     this.onSelect.emit(d.id);
   }
   

@@ -1,0 +1,84 @@
+/* filter list */
+.filterlist {
+    display:table;
+    padding-left:10px;
+}
+.filterlist li {
+    display:table-cell;
+    cursor: pointer;
+    padding:5px;
+}
+.filterlist li.u {
+    text-decoration:underline;
+}
+.filterlist li:hover {
+    text-decoration: none;
+}
+.filterlist li.i {
+    text-decoration:none;
+}
+
+.subfilterlist * ul {
+   display:table;
+    padding-left:10px;
+
+}
+.subfilterlist li {
+    display:table-cell;
+    cursor: pointer;
+    text-decoration:underline;
+    padding:5px;
+}
+.subfilterlist li b {
+    text-decoration:none !important;
+    cursor:default;
+}
+
+/* some special labels */
+.filterlist .label {
+    background: #414141;
+    color:#fff;
+    padding:3px;
+    margin-right:5px;
+    cursor: default;
+}
+.filterlist .reset {
+    background:#ce0e0e;
+    color:#fff;
+    padding:3px;
+    margin-right:5px;
+}
+
+.filterswitches {
+    display: table;
+}
+.filterswitches div {
+    display: table-cell;
+
+}
+
+.filterswitches div a {
+    display:table-cell;
+    border:1px solid #414141;
+    border-left-width: 0;
+    padding:5px;
+    /*font-variant: small-caps;
+    /*text-transform: uppercase;*/
+    font-size: 80%;
+    text-decoration: none;
+}
+.filterswitches div a:hover {
+    background: #414141;
+    color: #fff;
+}
+.filterswitches div a.active {
+    background: #3c8f17;
+    color: #fff;
+}
+.filterswitches div a:first-of-type {
+    border-radius: 5px 0 0 5px;
+    border-left-width: 1px;
+}
+.filterswitches div a:last-of-type {
+    border-radius: 0 5px 5px 0;
+}

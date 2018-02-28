@@ -21,7 +21,7 @@ export class AppComponent implements OnInit, OnChanges {
   loaded = false;
   
   data = {}; // data of all the stuff from the json @todo: needed?
-  data_src = {'paths': 'eu4map.json', 'provinces': 'provdata.json', 'countries': 'countries.json', 'tradenodes': 'tradenodes.json'};
+  data_src = {'paths': 'eu4map.json', 'provinces': 'provdata.json', 'countries': 'countries.json', 'tradenodes': 'tradenodes.json', 'game': '_all.json'};
   
   constructor(private http: HttpClient, public dataStore: DataService, public filters: Filters) {
     this.settings['allowZoom'] = true;
@@ -46,7 +46,12 @@ export class AppComponent implements OnInit, OnChanges {
       self.dataStore.provinces = datas[1];
       self.dataStore.countries = datas[2];
       self.dataStore.tradenodes = datas[3];
+      self.dataStore.game = datas[4]; // Things in data/_all.json
+
+      console.log('_all', self.dataStore.game)
       
+      // Get all unique like religions/cultures?
+
       self.loaded = true;
       self.redrawMap = true;
       
