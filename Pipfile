@@ -13,3 +13,7 @@ verify_ssl = true
 
 pandas = "==0.16.2"
 namedlist = "==1.7"
+selenium = "*"
+lxml = "*"
+requests = "*"
+cssselect = "*"
