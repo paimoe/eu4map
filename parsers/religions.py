@@ -1,8 +1,8 @@
 import json
 
-from parsers.base import DataParser
+from parsers.base import DataParser_save, DataParser
 
-class ReligionParser(DataParser):
+class ReligionParser(DataParser_save):
     """
     Parse religions, used for UI, Country, Province
     """
@@ -28,4 +28,21 @@ class ReligionParser(DataParser):
 
         self.save(parsed)
 
+        # Group up
+        ignore = ['religious_schools']
+        compiled = {}
+        for gname, rel in parsed.items():
+            subkeys = [ (sub, sub) for sub in rel.keys() if isinstance(rel[sub], dict) and sub not in ignore ]
+            subkeys = sorted(list(map(self.clean_name, subkeys)))
+
+            compiled[ self.clean_name(gname) ] = subkeys
+
+        self.save_data('religions', compiled)
+
         return parsed
+
+    def clean_name(self, s):
+        if isinstance(s, tuple):
+            return (s[0].partition('_')[0].capitalize(), s[1])
+        else:
+            return s.partition('_')[0].capitalize()
