@@ -1,4 +1,4 @@
-from parsers.base import DataParser
+from parsers.base import DataParser_save, DataParser
 import json, os, re, datetime,pprint
 import namedlist
 
@@ -103,6 +103,7 @@ class ProvinceParser(DataParser):
         with open(fname, 'r', encoding='latin-1') as fc:
             read = fc.read()
 
+
         parsed = self.oneline(read)
         
         for pline in parsed.items():
@@ -110,6 +111,7 @@ class ProvinceParser(DataParser):
             #print(pline)
 
             #convert lastkey to datetime if needed
+            #dtkey = self.match_date.search(k)
             dtkey = self.dtre.search(k)
             if dtkey is not None:
                 k = datetime.datetime(*list(map(int, dtkey.groups())))
