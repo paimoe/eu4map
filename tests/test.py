@@ -129,6 +129,8 @@ class TestUI(EU4MapTest): pass
 
 class TestSaveParser(EU4MapTest): pass
 
+class TestUnitParser(EU4MapTest): pass
+
 
 if __name__ == '__main__':
     # Has to be run on an installation with EU4 installed

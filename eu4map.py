@@ -125,7 +125,7 @@ if __name__ == '__main__':
     opts = parser.parse_args()
 
     # loaders
-    loaders = ['province', 'country', 'religion', 'tradenode', 'achievement']
+    loaders = ['province', 'country', 'religion', 'tradenode', 'achievement', 'units']
 
     if opts.action in loaders:
         p = eval("{0}Parser()".format(opts.action.capitalize()))

@@ -277,16 +277,20 @@ class DataParser_save(object):
     cs = None
     test = False
 
-    def __init__(self, test=False, **kwargs): 
+    def __init__(self, test=False, internal=False, **kwargs): 
         self.min_dt = datetime.datetime(1444, 11, 11)
         self.cs = Checksum()
         self.test = test
+        self.internal = internal
 
         self.match_date = re.compile('(\d{4})\.(\d+)\.(\d+)')
         # Should match a list of numbers, including decimals and negatives
         self.match_num_list = re.compile('^[\s\d\.\-]+$')
 
     def save(self, data, stats=False):
+        if self.internal is True:
+            # Don't save 
+            return
 
         if self.output is None:
             raise('No self.output set when calling save()')
@@ -337,6 +341,13 @@ class DataParser_save(object):
         fp = os.path.join(EU4_PATH, *path.split(os.path.sep))
         assert os.path.exists(fp), "File {0} does not exist in EU4 directory".format(path)
         return fp 
+
+    def walk_and_load_and_parse(self, directory): # maybe
+        pass
+    def load_and_parse(self, path):
+        if not os.path.exists(path):
+            raise IOError('Invalid path: {0}'.format(path))
+        pass
 
     def first_nums(self, x):
         return int("".join(itertools.takewhile(str.isdigit, x)))
