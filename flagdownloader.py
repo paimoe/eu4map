@@ -4,6 +4,8 @@ from lxml.cssselect import CSSSelector as css
 from lxml.etree import tostring
 import os, json, sys
 
+from PIL import Image
+
 CACHE = 'output/flags.cache'
 
 def download():
@@ -65,9 +67,29 @@ def parse():
         f.write("\n".join(flags))
         print('Wrote {0} countries to file'.format(len(flags)))
 
+def thumbnails():
+    src = os.path.join('output', 'flags')
+    dest = os.path.join(src, '32')
+    size = (32,32)
+
+    for root, dirs, files in os.walk(src):
+        for f in files:
+            if f.endswith('png'):
+                # resize
+                try:
+                    im = Image.open(os.path.join(root, f))
+                    im.thumbnail(size)
+                    im.save(os.path.join(dest, f), 'PNG')
+                    print('Created thumbnail for', f)
+                except IOError:
+                    print('Cannot create thumbnail for', f)
+                    raise
 
 if __name__ == '__main__':
-    if sys.argv[1] == 'dl':
+    a = sys.argv[1]
+    if a == 'dl':
         download()
+    elif a == 'thumbnails':
+        thumbnails()
     else:
         parse()
