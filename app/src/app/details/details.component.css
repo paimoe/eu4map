@@ -1,6 +1,6 @@
 #details {
     margin: 0 10px;
-    border: 1px solid #c3c3c3;
+    /*border: 1px solid #c3c3c3;*/
     border-radius: 0 0 10px 10px;
     padding: 10px;
     background:white;
@@ -90,4 +90,14 @@ img.down {
 }
 .credits a {
     color: #b6b0b0;
+}
+
+div.x .cap, .cap {
+    text-transform: capitalize;
+}
+div.x a {
+    color: #000;
+}
+div.x .mid {
+    text-align:center;
 }

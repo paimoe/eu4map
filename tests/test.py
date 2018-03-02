@@ -77,7 +77,7 @@ class TestProvinceParser(EU4MapTest):
     def test_parse(self):
         s = self.stockholm
         #print(len(s), s)
-        self.assertEqual(len(s), 20)
+        self.assertEqual(len(s), 21)
         #self.assertIsInstance(s, dict)
         self.assertEqual(s.id, 1)
         self.assertEqual(s.name, 'Stockholm')
@@ -93,11 +93,15 @@ class TestProvinceParser(EU4MapTest):
         self.assertFalse(s.hre)
         self.assertEqual(s.claims, [])
         self.assertEqual(s.visible, ['eastern', 'western', 'muslim', 'ottoman'])
+        self.assertFalse(s.lake)
+        self.assertFalse(s.wasteland)
         #print('stock', self.stockholm)
 
         #test colours
         wien = self.wien
         self.assertTrue(wien.hre)
+
+        # test lakes/wastelands, as well as language loading
 
     def test_applied_history(self):
         pass

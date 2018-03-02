@@ -44,7 +44,12 @@ export class DetailsComponent implements OnInit, OnChanges, OnDestroy {
   }
   
   test(item) {
-    console.log('TEST NEW FILTER', item, this._filters.hre);
+    //6console.log('TEST NEW FILTER', item, this._filters.hre);
+  }
+
+  unselected() {
+    //console.log('unselected', this.sp, _.isEmpty(this.sp),this.sp == {})
+    return _.isEmpty(this.sp);
   }
   
   setAllowZoom() {
@@ -52,6 +57,10 @@ export class DetailsComponent implements OnInit, OnChanges, OnDestroy {
     this.allowZoom = !this.allowZoom;
     // Emit this up
     this.onSetting.emit(this.allowZoom);
+  }
+
+  capitalize(s) {
+    return s.charAt(0).toUpperCase() + s.slice(1);
   }
   
   showDetail() {
@@ -62,8 +71,6 @@ export class DetailsComponent implements OnInit, OnChanges, OnDestroy {
     province['cores'] = [].concat(...province['cores'])
     // Primary core first
 
-    this.selectedProvince = province;
-    this.sp = province;
     if (province.owner !== null) {
       let country = this.dataStore.countries[province.owner];
       this.sCountry = country;
@@ -72,9 +79,26 @@ export class DetailsComponent implements OnInit, OnChanges, OnDestroy {
     }
 
     // check if is province
-    province['nonp'] = province.wasteland || province.ocean || province.sea;
-    console.log('c', province);
+    province['nonp'] = province.wasteland || province.ocean || province.sea || province.lake;
+    province['owned'] = province['owner'] !== null;
+    //console.log('c', province);
     this.calculateTag(this.sCountry['tag']);
+
+    province['culturegroup'] = undefined;
+    // Find culture group
+    _.each(this.dataStore.game['cultures'], (val, idx) => {
+      if (val.includes(province['culture'])) {
+        province['culturegroup'] = idx;
+      }
+    });
+
+    console.log('cg,', province)
+
+    // Prettier
+    //province['culture'] = this.capitalize(province['culture'])
+
+    this.selectedProvince = province;
+    this.sp = province;
   }
   
   filter(which, val) {
@@ -96,7 +120,7 @@ export class DetailsComponent implements OnInit, OnChanges, OnDestroy {
     this.countryInfo = {};
     this.countryInfo['provs'] = p;
     this.countryInfo['totalDev'] = _.reduce(p, (a, b) => a + +b['tax'] + +b['prod'] + +b['man'], 0); // sum the dev
-    console.log(this.countryInfo);
+    //console.log(this.countryInfo);
   }
 
 }

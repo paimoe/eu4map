@@ -1,39 +1,47 @@
 <!--<div id="details" [hidden]="!_filters.selectedProvince">-->
-    <div id="details">
-    <h2>{{ selectedProvince.name }}<span>#{{ selectedProvince.id }}</span></h2>
-    <div [ngClass]="{'province':true, 'hre': selectedProvince.hre, 'ocean': selectedProvince.ocean, 'wl': selectedProvince.wasteland}" [hidden]="selectedProvince.nonp">
+<div id="details">
+    <h2 [hidden]="unselected()">{{ selectedProvince.name }}<span>#{{ selectedProvince.id }}</span></h2>
+    <div [ngClass]="{'province':true, 'hre': sp.hre, 'ocean': sp.ocean, 'wl': sp.wasteland}" [hidden]="sp.nonp || unselected()">
         <div class="development">
             <div class="r">
-                <div class="xi"><img src="assets/i/Tax_income.png" />{{ selectedProvince.tax }}</div>
-                <div class="xi"><img src="assets/i/Production.png" />{{ selectedProvince.prod }}</div>
-                <div class="xi"><img src="assets/i/Manpower.png" />{{ selectedProvince.man }}</div>
-                <div class="xi" (click)="filter('tradegood', selectedProvince.trade)" data-tooltip="Show provinces with this trade good">{{ selectedProvince.trade }}</div>
+                <div class="xi"><img src="assets/i/Tax_income.png" />{{ sp.tax }}</div>
+                <div class="xi"><img src="assets/i/Production.png" />{{ sp.prod }}</div>
+                <div class="xi"><img src="assets/i/Manpower.png" />{{ sp.man }}</div>
+                <div class="xi tooltip-left cap" (click)="filter('tradegood', selectedProvince.trade)" data-tooltip="Show provinces with this trade good">{{ sp.trade }}</div>
             </div>
         </div>
         <div class="development">
             <div class="r">
                 <!-- check if htese match the national ones -->
-                <div class="x" style="width:50%"><a href="#" (click)="filter('province_r', selectedProvince.religion)" class="tooltip-right" data-tooltip="Provinces with this religion">{{ selectedProvince.religion }}</a></div>
-                <div class="x" style="width:50%"><a href="#" (click)="filter('province_c', selectedProvince.culture)" class="tooltip-right" data-tooltip="Provinces with this culture">{{ selectedProvince.culture }}</a>/cgroup</div>
+                <div class="x" style="width:50%"><a href="#" (click)="filter('province_r', selectedProvince.religion)" class="tooltip-left cap mid" data-tooltip="Provinces with this religion">{{ sp.religion }}</a></div>
+                <div class="x" style="width:50%"><a href="#" (click)="filter('province_c', selectedProvince.culture)" class="tooltip-left cap mid" data-tooltip="Provinces with this culture">{{ sp.culture }}</a><span [hidden]="!sp.culturegroup">/</span>{{ sp.culturegroup }}</div>
             </div>
         </div>
-        <div class="cores">
-            Cores: <span *ngFor="let core of selectedProvince.cores"><img src="assets/i/flags/{{ core }}.png" [attr.data-tooltip]="'Core of ' + core" class="flag32 down"/></span>
+        <div class="cores" [hidden]="sp.nonp || !sp.owned">
+            Cores: <span *ngFor="let core of sp.cores"><img src="assets/i/flags/32/{{ core }}.png" [attr.data-tooltip]="'Core of ' + core" class="flag32 down tooltip-left"/></span>
         </div>
-        <div class="claims">
-            Claims: <span *ngFor="let core of sp.claims"><img src="assets/i/flags/{{ core }}.png" [attr.data-tooltip]="'Claim of ' + core" class="flag32 down"/></span>
+        <div class="claims" [hidden]="sp.nonp || !sp.owned">
+            Claims: <span *ngFor="let core of sp.claims"><img src="assets/i/flags/32/{{ core }}.png" [attr.data-tooltip]="'Claim of ' + core" class="flag32 down tooltip-left"/></span>
         </div>
     </div>
-    <div class="country" [hidden]="selectedProvince.nonp">
+    <div class="country" [hidden]="sp.nonp || !sp.owned || unselected()">
         <h2>{{ sCountry.name }}</h2>
         <div class="development">
             <div class="r">
                 <div class="x">{{ countryInfo.totalDev }} dev</div>
                 <div class="x">
-                    <a href="#" class="tooltip-right" data-tooltip="Countries with this religion">{{ sCountry.religion }}</a>
+                    <a href="#" class="tooltip-left cap mid" data-tooltip="Countries with this religion">{{ sCountry.religion }}</a>
                 </div>
                 <div class="x">
-                    <a href="#" class="tooltip-right" data-tooltip="Countries with this culture">{{ sCountry.culture }}</a>
+                    <a href="#" class="tooltip-left cap mid" data-tooltip="Countries with this culture">{{ sCountry.culture }}</a>
+                </div>
+
+                <!-- subjects -->
+            </div>
+            <div class="r">
+
+                <div class="x">
+                    IS subejct of {{ sp.is_subject }}
                 </div>
             </div>
         </div>

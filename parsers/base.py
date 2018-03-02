@@ -580,8 +580,19 @@ class DataParser_save(object):
 
         # Now parse through t, while replacing the placeholders
         comp = {}
+        used_keys = []
         for k, char in self.gen(t):
-            comp[k] = char
+
+            # Sometimes we awesomely use the same key name
+            if k in used_keys:
+                if isinstance(comp[k], list):
+                    comp[k].append(char)
+                else:
+                    comp[k] = [comp[k], char]
+            else:
+                comp[k] = char
+
+            used_keys.append(k)
 
         # Convert list of tuples into dictionary
         return comp

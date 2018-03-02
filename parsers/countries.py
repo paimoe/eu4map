@@ -18,7 +18,8 @@ class CountryParser(DataParser_save):
     @staticmethod
     def container():
         # Set up container
-        fields = ('tag', 'name','capital', 'gov', 'govrank', 'ideas', 'color', 'culture', 'religion', 'techgroup', 'history', 'ideastype')
+        fields = ('tag', 'name','capital', 'gov', 'govrank', 'ideas', 'color', 'culture', 'religion', 'techgroup', 'history', 'ideastype',
+            'internal_name')
         nlistfields = []
         # Set types of specifics
         for n in fields:
@@ -52,7 +53,10 @@ class CountryParser(DataParser_save):
                         if not f.startswith(one):
                             continue
 
-                    c = self.parse(os.path.join(root, f))
+                    # Um try using the proper parser
+                    with open(os.path.join(root, f), 'r', encoding='latin-1') as fopen:
+                        fc = self.oneline(fopen.read())
+                        c = self.parse(f, fc)
 
                     i = ideas.get_ideas(c)
                     c.ideas = i[1]
@@ -68,7 +72,7 @@ class CountryParser(DataParser_save):
                     fname = f[:-4]
                     # Fix up fucked up tags
                     for tag, c in self.allcountries.items():
-                        name = c.name
+                        name = c.internal_name
 
                         # Checks for rename in other game files, but not the actual country
                         if name in renames.MAP['common/countries']:
@@ -81,7 +85,7 @@ class CountryParser(DataParser_save):
 
                         # Check user name of country, eg Zwahili - Swahili - Kilwa
                         if name in renames.NAMES:
-                            c.name = renames.NAMES[name]
+                            c.internal_name = renames.NAMES[name] # hmmm
 
                         self.allcountries[tag] = c
 
@@ -91,46 +95,42 @@ class CountryParser(DataParser_save):
         # Then override with national ideas
 
         # Vassals/subjects are in history/diplomacy, just take the ones that start 1444.1.1
+        # Copy subject stuff from savefile? nah can't idt
+        # nah, should definitely make a save file day one, won't have all the info but should have at least diplomacy etc, existing alliances
 
         dump = { x: d._asdict() for x, d in self.allcountries.items() }
 
         self.save(dump)
         return self.allcountries
 
-    def parse(self, fname):
+    def parse(self, fname, fdata):
         c = self.container()
 
         # split fname
-        c.tag, c.name = map(str.strip, os.path.basename(fname)[0:-4].split('-'))
+        c.tag, c.internal_name = map(str.strip, os.path.basename(fname)[0:-4].split('-'))
+
+        # Get country name based on tag
+        try:
+            c.name = self._('countries', c.tag, lang='en')
+        except KeyError: 
+            c.name = c.internal_name
 
         whitelist_starts = ('government', 'government_rank', 'primary_culture', 'religion', 'technology_group', 'capital')
-
-        def parse_line(line):
-            sp = line.split('=')
-            try:
-                return (sp[0].strip(), sp[1].strip())
-            except IndexError:
-                print(line, sp)
-                raise
-
-        with open(os.path.join(fname), 'r', encoding='latin-1') as fc:
-            for cnt, line in enumerate(fc):
-                # 
-                if line.startswith(whitelist_starts):
-                    k, v = parse_line(line)
-                    
-                    if k == 'government':
-                        c.gov = v
-                    if k == 'government_rank':
-                        c.govrank = v
-                    if k == 'primary_culture':
-                        c.culture = v
-                    if k == 'religion':
-                        c.religion = v
-                    if k == 'technology_group':
-                        c.techgroup = v
-                    if k == 'capital':
-                        c.capital = self.first_nums(v)
+        for key, v in fdata.items():
+            if key in whitelist_starts:
+                
+                if key == 'government':
+                    c.gov = v
+                if key == 'government_rank':
+                    c.govrank = v
+                if key == 'primary_culture':
+                    c.culture = v
+                if key == 'religion':
+                    c.religion = v
+                if key == 'technology_group':
+                    c.techgroup = v
+                if key == 'capital':
+                    c.capital = v
         return c
 
     def parse_color(self, fname):

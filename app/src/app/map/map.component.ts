@@ -84,8 +84,8 @@ export class MapComponent implements OnInit, OnChanges {
     
     var svg = d3.select('#svg svg')
         .attr('width', '100%')
-        .attr('height', height + 'px')
-        .style('border', '1px solid black')
+        .attr('height', '100%')
+        //.style('border', '1px solid black')
     
         // Use switching for now :(
         .on('contextmenu', function(d) {
@@ -114,8 +114,8 @@ export class MapComponent implements OnInit, OnChanges {
     var rect = container.append("rect")
         .attr('id', 'dragger')
         .attr("class", "overlay")
-        .attr("width", width)
-        .attr("height", height)
+        .attr("width", '100%')
+        .attr("height", '100%')
         .style('pointer-events', 'all')
         .call(zoom);
     
@@ -227,6 +227,9 @@ export class MapComponent implements OnInit, OnChanges {
       if (node['sea'] === true || node['ocean'] === true) {
           var water = true;
           classes.push('psea');
+      }
+      if (node['lake'] === true) {
+        classes.push('plake');
       }
       
       // Check _filters and ignore any others if we're filtered out

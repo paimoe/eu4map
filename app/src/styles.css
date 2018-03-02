@@ -25,6 +25,9 @@ path.hover {
 .pnobody {
     fill: DimGray !important;
 }
+.plake {
+  fill: #575972 !important;
+}
 .filtered {
     fill: black !important;
 }
@@ -36,6 +39,19 @@ path.hover {
 img.flag32 {
     width: 32px;
     height:24px;
+}
+
+#part-filters {
+  height: 70px;
+}
+#part-map {
+  height: calc(100vh - 71px);
+}
+#part-details {
+  height: calc(100vh - 71px);
+}
+#svg {
+  height:100%;
 }
 
 /* tooltips */

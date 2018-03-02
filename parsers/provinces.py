@@ -8,7 +8,7 @@ from .tradenodes import TradenodeParser
 
 import constants, renames,sys
 
-class ProvinceParser(DataParser):
+class ProvinceParser(DataParser_save):
 
     output = 'output/provdata.json'
     namesrc = 'sources/definition.csv'
@@ -27,7 +27,7 @@ class ProvinceParser(DataParser):
     def container():
         # Set up container
         fields = ('id', 'name', 'owner', 'controller', 'cores', 'culture', 'religion', 
-            'tax', 'prod', 'man', 'trade', 'hre', 'claims', 'visible', 'area', 'sea', 'ocean', 'wasteland',
+            'tax', 'prod', 'man', 'trade', 'hre', 'claims', 'visible', 'area', 'sea', 'ocean', 'lake', 'wasteland',
             'history', 'tradenode')
         nlistfields = []
         # Set types of specifics
@@ -37,7 +37,7 @@ class ProvinceParser(DataParser):
                 t = []
             elif n in ('id',):
                 t = 0
-            elif n in ('sea', 'ocean', 'wasteland'):
+            elif n in ('sea', 'ocean', 'wasteland', 'lake'):
                 t = False
             elif n in ('tradenode',):
                 t = {}
@@ -70,7 +70,6 @@ class ProvinceParser(DataParser):
                         c.tradenode['name'] = tp.belongs_to(c.id) # color is in the tradenodes datafile
                         c.tradenode['main'] = tp.is_main(c.id)
 
-
                         self.allprovinces[int(c.id)] = c
 
         # Also get other parts
@@ -89,6 +88,7 @@ class ProvinceParser(DataParser):
             self.allprovinces[row['province']] = c
         
         dump = { d.id: d._asdict() for x, d in self.allprovinces.items() }
+
         self.save(dump)  
 
         return self.allprovinces
@@ -111,8 +111,8 @@ class ProvinceParser(DataParser):
             #print(pline)
 
             #convert lastkey to datetime if needed
-            #dtkey = self.match_date.search(k)
-            dtkey = self.dtre.search(k)
+            dtkey = self.match_date.search(k)
+            #dtkey = self.dtre.search(k)
             if dtkey is not None:
                 k = datetime.datetime(*list(map(int, dtkey.groups())))
 
@@ -211,4 +211,9 @@ class ProvinceParser(DataParser):
             c.wasteland = True
         if c.area in constants.SEAS:
             c.ocean = True
+        if c.id in constants.LAKES:
+            c.lake = True
         return c
+
+    def terrain_type():
+        pass
