@@ -20,9 +20,14 @@ class CultureParser(DataParser_save):
         with open(self.cultures, 'r', encoding='latin-1') as f:
             o = self.oneline(f.read())
         
+        allgroups = {}
         for cgroup, c in o.items():
-            print(cgroup)
-        # Parse formables
-        #savedata = { x:d for x,d in self.data.items() }
-        savedata = {}
-        #self.save(savedata)
+            cgroup = cgroup.replace('_', ' ').title()
+            cultures = []
+            for name, data in c.items():
+                if name not in ['dynasty_names', 'graphical_culture', 'male_names', 'female_names']:
+                    cultures.append(name)
+
+            allgroups[cgroup] = cultures
+
+        self.save_data('cultures', allgroups)
