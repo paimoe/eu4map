@@ -3,6 +3,8 @@ from timeit import default_timer as timer
 
 from decimal import Decimal
 
+import yaml
+
 # Temp fix for broken pipe when running `pipenv run python eu4map.py save | head -n 50`
 # https://stackoverflow.com/a/30091579
 #from signal import signal, SIGPIPE, SIG_DFL
@@ -277,6 +279,8 @@ class DataParser_save(object):
     cs = None
     test = False
 
+    langs = {'en': {'countries': {}, 'provinces': {}}}
+
     def __init__(self, test=False, internal=False, **kwargs): 
         self.min_dt = datetime.datetime(1444, 11, 11)
         self.cs = Checksum()
@@ -286,6 +290,56 @@ class DataParser_save(object):
         self.match_date = re.compile('(\d{4})\.(\d+)\.(\d+)')
         # Should match a list of numbers, including decimals and negatives
         self.match_num_list = re.compile('^[\s\d\.\-]+$')
+
+        self.load_language('english')
+
+    def load_language(self, l):
+        # Probably just l for now
+        if l != 'english':
+            raise ValueError('Only english for now')
+
+        def load_yaml(name):
+            ldir = os.path.join(EU4_PATH, 'localisation')
+
+            fullpath = os.path.join(ldir, name)
+            if os.path.exists(fullpath):
+                with open(fullpath, 'r') as f:
+                    try:
+                        langfile = yaml.load(f)
+                        return langfile
+                    except yaml.YAMLError as exc:
+                        raise
+                        print(exc)
+
+        def grouper(n, iterable, fillvalue=None):
+            args = [iter(iterable)] * n
+            print('args', args)
+            return itertools.zip_longest(fillvalue=fillvalue, *args)
+
+        # split on spaces that aren't in quotes
+        # Any not-: or space, up to a :, then \d, then \s, then quote, then anything that isn't a quote, up to the next quote
+        country_splitter = re.compile('(?P<tag>[^:\s]+):\d\s"(?P<name>[^"]+)"')
+        province_splitter = country_splitter
+        #Countries
+        cdata = load_yaml('countries_l_english.yml')
+        citems = country_splitter.findall(cdata['l_english'])
+        self.langs['en']['countries'] = dict(citems)
+        
+        # Provinces
+        pdata = load_yaml('prov_names_l_english.yml')
+        pitems = province_splitter.findall(pdata['l_english'])
+        pitems = { int(k.replace('PROV', '')): v for k,v in pitems if 'PROV' in k}
+        self.langs['en']['provinces'] = pitems
+
+    def _(self, subject, key, lang=None):
+        if lang is None:
+            # Return object with all languages
+            raise NotImplementedError()
+
+        try:
+            return self.langs[lang][subject][key]
+        except KeyError:
+            raise
 
     def save(self, data, stats=False):
         if self.internal is True:
