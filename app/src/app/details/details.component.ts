@@ -15,10 +15,10 @@ export class DetailsComponent implements OnInit, OnChanges, OnDestroy {
   @Output() onSetting = new EventEmitter();
   @Output() onFilter = new EventEmitter();
   @Input() provinceID: number = 0;
-  selectedProvince = {};
-  sp = {}; // just a shorthand
-  sCountry = {};
-  countryInfo = {};
+  selectedProvince: any = {};
+  sp: any = {}; // just a shorthand
+  sCountry: any = {};
+  countryInfo: any = {};
   
   filtersub: Subscription;
 

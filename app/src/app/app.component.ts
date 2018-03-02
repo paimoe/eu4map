@@ -36,7 +36,7 @@ export class AppComponent implements OnInit, OnChanges {
     var dcount = Object.keys(self.data_src).length;
     var allFiles = [];
     for (let k in this.data_src) {
-      allFiles.push(this.http.get('/assets/' + self.data_src[k]).toPromise());
+      allFiles.push(this.http.get('assets/' + self.data_src[k]).toPromise());
     }
     Promise.all(allFiles).then(function(datas) {
       //console.log('finished all promises', datas);
@@ -69,7 +69,7 @@ export class AppComponent implements OnInit, OnChanges {
   }
   
   changeSetting(evt) {
-    console.log('changeSetting()');
+    //console.log('changeSetting()');
     /*
     switch(evt['type']) {
       case 'allowZoom':
@@ -86,7 +86,7 @@ export class AppComponent implements OnInit, OnChanges {
   }
   
   provinceSelected(provid) {
-    console.log('selected a province', provid);
+    //console.log('selected a province', provid);
     this.provinceID = provid;
   }
   

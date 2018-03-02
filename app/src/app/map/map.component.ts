@@ -28,15 +28,15 @@ export class MapComponent implements OnInit, OnChanges {
   }
   
   ngOnChanges(changes: SimpleChanges) {
-    console.log('datastore', this.dataStore)
-    console.log('map changes func',changes);
+    //console.log('datastore', this.dataStore)
+    //console.log('map changes func',changes);
     let key = Object.keys(changes)[0];
     if (key == 'filtersChanged') {
       // Rerun _filters
-      console.log('ngChanges on map', this._filters);
+      //console.log('ngChanges on map', this._filters);
       //this.drawMap();
     } else if (key == 'redrawMap') {
-      console.log('got redrawMap event');
+      //console.log('got redrawMap event');
       this.drawMap();
     } else {
       this.toggleZoom();
@@ -58,7 +58,7 @@ export class MapComponent implements OnInit, OnChanges {
   }
   
   filtersChanged(item) {
-    console.log('called filtersChanged', item)
+    //console.log('called filtersChanged', item)
     this.drawMap();
   }
   
@@ -67,7 +67,7 @@ export class MapComponent implements OnInit, OnChanges {
   }
 
   ngOnInit() {
-    console.log('mapComponent ngOninit()');
+    //console.log('mapComponent ngOninit()');
     this.filtersub = this._filters.obsFilter.subscribe(item => this.filtersChanged(item))
     
     //this.filtersub = this._filters.obsFilter.subscribe(item => this.filtersChanged(item))
@@ -127,7 +127,7 @@ export class MapComponent implements OnInit, OnChanges {
     if (this.dataStore.paths === undefined) {
       return;
     }
-    console.log('DRAWING MAP', this.dataStore.paths);
+    //console.log('Drawing map');
     let self = this;
     
     /* Get data from storage */

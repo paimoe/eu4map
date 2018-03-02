@@ -1,4 +1,4 @@
-import { Component, OnInit, Input, OnChanges } from '@angular/core';
+import { Component, OnInit, Input, OnChanges, SimpleChanges } from '@angular/core';
 import { DataService, Filters } from '../app.services';
 
 @Component({
@@ -9,13 +9,18 @@ import { DataService, Filters } from '../app.services';
 export class FiltersComponent implements OnInit {
   
   _defaults: any;
-  private type: string;
+  type: string;
 
   @Input() loadedReceiver: boolean;
   
   exclusives: string[] = ['hre', 'releasable', 'tradenodes', 'formable'];
 
-  opts = {};
+  opts = {
+    target: '',
+    include_wasteland: false,
+  };
+  religions: any;
+  religiongroups: any;
   
   constructor(public dataStore: DataService, public _filters: Filters) {
 
