@@ -7,6 +7,7 @@ from .tradenodes import TradenodeParser
 from .savegames import SavegameParser
 from .achievements import AchievementParser
 from .units import UnitsParser
+from .cultures import CultureParser
 from .base import DataParser, EU4_PATH
 
 __all__ = [
@@ -20,5 +21,6 @@ __all__ = [
     'TradenodeParser',
     'SavegameParser',
     'AchievementParser',
-    'UnitsParser'
+    'UnitsParser',
+    'CultureParser'
 ]

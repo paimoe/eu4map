@@ -498,7 +498,8 @@ class DataParser_save(object):
         def magic_replace(matchobj):
             #print(matchobj.group(0))
             g = matchobj.group(0).strip().replace('{', '').replace('}', '')
-            return self.set_placeholder(g)
+            new_ph_key = self.set_placeholder(g)
+            return new_ph_key
 
         # Replace easily matched braces with placeholders
         # Match braces that contain these values: whitespace, string, quotes, periods (for decimals), = (for k/v (OPTIONAL)), negative signs
@@ -565,7 +566,7 @@ class DataParser_save(object):
             v = stack
         elif ph.count('"') % 2 == 0:
             # If an even number of quotes
-            v = self.parse_quote_list(ph)
+            v = self.parse_str_list(ph)
 
         # Does this contain more placeholders?
         return v
@@ -615,15 +616,27 @@ class DataParser_save(object):
 
         return comp if comp != {} else obj
 
-    def parse_quote_list(self, s):
+    re_quote_splitter = re.compile('("[^"]+")')
+    def parse_str_list(self, s):
         """
         Contains an even number of quotes, and no equals sign. Split on quotes, remove any empty elements
 
         eg:
         "Conquest of Paradise" "Wealth of Nations" "Res Publica" "Art of War" "Rights of Man" "Mandate of Heaven" "Third Rome"
         """
-        flist = filter(lambda x: len(x.strip()) > 0, s.split('"'))
-        return list(map(self.clean_value, flist))
+        # SomETIMES WE HAVE QUOTES MIXED WITH NO QUOTES :D
+        stack = []
+        for item in self.re_quote_splitter.split(s):
+            # Split out the items that are quoted
+            if '"' not in item:
+                # now just a normal string with n items
+                listed = filter(lambda x: len(x.strip()) > 0, item.split(' '))
+                stack.extend(list(map(self.clean_value, listed)))
+            else:
+                # Quoted part, so use the whole thing
+                stack.append(self.clean_value(item))
+
+        return stack
 
     def parse_number_list(self, s):
         """
