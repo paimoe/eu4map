@@ -1,3 +1,14 @@
+"""
+# Uh deploy plz
+# python deploy.py 
+
+increment version
+ssh transfer the folder (exluding certain things that don't need to be)
+to /srv/eu4map/<version>, symlink /srv/<proj>/beta to that new version
+should already be linked up in nginx
+when i've verified it live (unit tests run on computer) then symlink /srv/<proj>/live to the new version, and symlink /srv/<proj>/revert to the old version? so a revert is just going back to that basically, ro store the data in a text file 
+"""
+
 import os
 
 from fabric.api import run, env, abort
@@ -25,8 +36,6 @@ def deploy():
     run('cp -r {0} {1}'.format(path(curr, '*'), prev))
 
     # scp build dir to /current
-    build_dir = os.path.join(os.getcwd(), 'app', 'dist')
-    assert os.path.exists(build_dir)
 
     rsync(local_dir=dist_dir, remote_dir=curr, exclude=[])
     # Add versions/symlinks later
