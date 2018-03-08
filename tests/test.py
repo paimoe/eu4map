@@ -7,6 +7,26 @@ from parsers import *
 todo
 - different ideas, national/group/common
 """
+class FileParserSetup(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.p = ParseFile()
+
+        with open('tests/files/savetest.eu4', 'r', encoding='latin-1') as f:
+            #cls.p.parse(f.read())
+            pass
+
+class TestFileParser(FileParserSetup):
+    """
+    Tests for the functions of parsers/fileparser.py
+    """
+    def test_parse_str_list(self):
+        self.assertEqual(self.p.parse_str_list("a b \"china white\" c \"green arrow\""), ['a', 'b', 'china white', 'c', 'green arrow'])
+    def test_parse_number(self): pass
+    def test_parse_number_list(self): pass
+    def test_clean_value(self): pass
+
+
 class EU4MapTest(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
