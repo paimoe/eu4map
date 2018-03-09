@@ -1,5 +1,7 @@
 import datetime, re
 from decimal import Decimal 
+import hashlib
+from timeit import default_timer as timer
 
 """
 In order to facilitate transpiling to JS, different style conventions in this file, and aliases
@@ -42,6 +44,8 @@ class ParseFile(object):#{
         self.t = t
         self.rdepth = 0
         self.placeholders = {}
+        self.ph_map = {} # placeholders map, md5:phid, so if something has the same value we can re-use
+        self.ph_cache = {} # pre calculated values? maybe
 
         # Match braces that contain these values: whitespace, string, quotes, periods (for decimals), = (for k/v (OPTIONAL)), negative signs
         # single quotes (for peoples names: Kai-Ka'us)
@@ -50,6 +54,7 @@ class ParseFile(object):#{
         # Should match a list of numbers, including decimals and negatives
         self.match_num_list = re.compile('^[\s\d\.\-]+$')
         self.quote_splitter = re.compile('("[^"]+")')
+        self.flat_parser = re.compile('([^\s"]+)\s?=\s?([^"\s]+|".+?")') # for instant parsing of a=b c=d, no placeholders or braces
     #}
 
     def set_placeholder(self, txt):#{ 
@@ -169,7 +174,20 @@ class ParseFile(object):#{
     def magic_replace(self, matchobj):#{
         #print(matchobj.group(0))
         g = matchobj.group(0).strip().replace('{', '').replace('}', '')
+
+        # Hash the value and store it so we can re-use it
+        to_md5 = hashlib.md5(g.encode('latin-1')).hexdigest()
+        if to_md5 in self.ph_map:
+            return self.ph_map[to_md5] # return reference to the old one
+
         new_ph_key = self.set_placeholder(g)
+        self.ph_map[to_md5] = new_ph_key
+
+        #if not any(x in g for x in ['placeholder', '}', '{']):
+        #    # pre-calc it
+        #    self.ph_cache[new_ph_key] = self.resolve_value(g)
+        #    #print('pre calcing', self.ph_cache[new_ph_key])
+        #    #print('ggg', g, to_md5)
         return new_ph_key
     #}
 
@@ -199,6 +217,7 @@ class ParseFile(object):#{
         # Replace easily matched braces with placeholders
         # Replace each match with a built in placeholder
         # Loop until we have no more matches
+        s0 = timer()
         while (contains(t, '{')): #{
             nt = self.match_braces.sub(self.magic_replace, t)
 
@@ -207,11 +226,15 @@ class ParseFile(object):#{
 
             t = nt
         #}
+        s1 = timer()
+        print('completed 1', s1 - s0)
 
         # Use string manipulation for the remainder
         while (contains(t, '{')): #{
             t = self.gen2(t)
         #}
+        s2 = timer()
+        print('completed 2', s2 - s1)
 
         # Now parse through t, while replacing the placeholders
         comp = {}
@@ -245,41 +268,63 @@ class ParseFile(object):#{
             raise KeyError('Unknown placeholder: {0}'.format(phkey))
         #}
 
-        ph = self.placeholders[phkey]
+        # Check if we've cached this value. should be all fully resolved
+        if phkey in self.ph_cache:
+            #print('using cache')
+            return self.ph_cache[phkey]
 
-        if (contains(ph, '=')): #{
+        ph = self.placeholders[phkey]
+        #print('resolving ph', len(self.ph_cache), phkey)
+
+        v = self.resolve_value(ph)        
+
+        # Does this contain more placeholders?
+        self.ph_cache[phkey] = v
+        return v
+    #}
+    typez = {'n': 0, 'np': 0,'nl': 0, 't': 0, 'sl': 0}
+    def resolve_value(self, val):#{
+        if (contains(val, '=')): #{
             # Normal
-            #print('normal', ph)
-            v = self.gen(ph)
-            v = list(map(self.clean_value, v))
+            #print('normal', val)
+            if 'placeholder' in val:
+                self.typez['np'] += 1
+
+                v = self.gen(val)
+                v = list(map(self.clean_value, v))
+            else:
+                g = self.flat_parser.findall(val)
+                #print('val', val, self.dictify(g))
+                #v = list(map(self.clean_value, g))
+                v = self.dictify(g)
+                self.typez['n'] += 1
+            #v = val
         #}
-        elif (ph.replace(" ", "").isdigit()):#{
+        elif (val.replace(" ", "").isdigit()):#{
             # Contains only numbers or spaces or decimals (just numbers for now, parse decimals later)
-            v = self.parse_number_list(ph)
+            v = self.parse_number_list(val)
+            self.typez['nl'] += 1
         #}
-        elif (ph.replace(" ", "").isalnum()):#{
+        elif (val.replace(" ", "").isalnum()):#{
             # Probably a list of say tags, just straight text
             # But might also be placeholders
             stack = []
 
-            for val in filter(lambda x: len(x) > 0, ph.split(' ')):#{
+            for val in filter(lambda x: len(x) > 0, val.split(' ')):#{
                 val = jstr(val) #JSDEL
                 if (val.startsWith('placeholder')):#{
                     val = self.resolve_placeholder(val)
                 #}
-                #print('VAL VAL VAL', val)
-                # todo: possibly don't want to clean_val, or if a list is like [a b c no] it'll try to cast it to bool
-                # so just keep as strings/ints
                 stack.append(val)
             #}
             v = stack
+            self.typez['t'] += 1
         #}
-        elif (ph.count('"') % 2 == 0): #{
+        elif (val.count('"') % 2 == 0): #{
             # If an even number of quotes
-            v = self.parse_str_list(ph)
+            v = self.parse_str_list(val)
+            self.typez['sl'] += 1
         #}
-
-        # Does this contain more placeholders?
         return v
     #}
 
@@ -316,15 +361,16 @@ class ParseFile(object):#{
             #print('testcomp', comp)
             for _, item in enumerate(obj):#{
                 #print('type', item, type(item))
+                v = self.clean_value(item[1])
                 if (comp[item[0]] == None): #{
-                    comp[item[0]] = item[1]
+                    comp[item[0]] = v
                 #}
                 elif (isinstance(comp[item[0]], list) == False):#{
                     comp[item[0]] = [comp[item[0]]]
-                    comp[item[0]].append(item[1])
+                    comp[item[0]].append(v)
                 #}
                 else: #{
-                    comp[item[0]].append(item[1])
+                    comp[item[0]].append(v)
                 #}
             #}
         #}

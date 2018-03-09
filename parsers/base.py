@@ -5,6 +5,8 @@ from decimal import Decimal
 
 import yaml
 
+from parsers.parsefile import ParseFile
+
 # Temp fix for broken pipe when running `pipenv run python eu4map.py save | head -n 50`
 # https://stackoverflow.com/a/30091579
 #from signal import signal, SIGPIPE, SIG_DFL

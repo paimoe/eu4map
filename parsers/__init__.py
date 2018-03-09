@@ -8,9 +8,13 @@ from .savegames import SavegameParser
 from .achievements import AchievementParser
 from .units import UnitsParser
 from .cultures import CultureParser
+
 from .base import DataParser, EU4_PATH
+from .parsefile import ParseFile
 
 __all__ = [
+    'ParseFile',
+    
     'ProvinceParser',
     'CountryParser',
     'DataParser',
@@ -22,5 +26,5 @@ __all__ = [
     'SavegameParser',
     'AchievementParser',
     'UnitsParser',
-    'CultureParser'
+    'CultureParser',
 ]
