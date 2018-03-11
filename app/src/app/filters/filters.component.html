@@ -1,8 +1,9 @@
 <ul class="filterlist">
     <li class="label">FILTERS</li>
     <li class="reset" (click)="setFilter('none')">RESET</li>
-    <li (click)="setFilter('hre')" class="u">HRE</li>
+    <li (click)="filterType('provinces')" class="u">Province Data</li>
     <li (click)="filterType('religion')" class="u">Religions</li>
+    <li (click)="setFilter('hre')" class="u">HRE</li>
     <li (click)="setFilter('tradenodes')" class="u">Trade</li>
     <li class="i"><small>Right click to switch between pan/select</small></li>
     <!-- pull this right -->
@@ -19,11 +20,18 @@
 <div class="subfilterlist">
     <!-- depends on what filter we're on -->
     <div id="filter_religions" [hidden]="type != 'religion'">
+        <p>Show all</p>
     	<ul *ngFor="let rgroup of religiongroups">
 		    <li><b>{{ rgroup }}</b></li>
             <li *ngFor="let r of religions[rgroup]">
                 <span (click)="setFilter('province_r', r[1])">{{ r[0] }}</span>
             </li>
 		</ul>         
+    </div>
+    <div id="filter_tradegoods" [hidden]="type != 'provinces'">
+        <ul>
+            <li><b>Provinces</b></li>
+            <li><span (click)="setFilter('tradegoods')">Trade Goods</span></li>
+        </ul>
     </div>
 </div>

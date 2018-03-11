@@ -68,7 +68,8 @@ export class MapComponent implements OnInit, OnChanges {
 
   ngOnInit() {
     //console.log('mapComponent ngOninit()');
-    this.filtersub = this._filters.obsFilter.subscribe(item => this.filtersChanged(item))
+    this.filtersub = this._filters.obsFilter.subscribe(item => this.filtersChanged(item));
+    this.ds = this.dataStore;
     
     //this.filtersub = this._filters.obsFilter.subscribe(item => this.filtersChanged(item))
     //console.log(this._filters.obsFilter);
@@ -177,22 +178,7 @@ export class MapComponent implements OnInit, OnChanges {
                     console.log('NO COLOR: ', c['name']);
                 }
                 var color = '#' + c['color'];
-            }
-            
-            // map modes
-            /*
-            if (self._filters.tradenodes === true) {
-              // get the node of this province
-              if (d['tradenode'] !== undefined) {
-                let node = tradenodes[d['tradenode']['name']];
-                //console.log('node', node)
-                if (node !== undefined && node['color'] !== undefined) {
-                  // Set this to the color
-                  var color = 'rgb(' + node['color'].join(',') + ')';
-                }
-              }
-            }*/
-            
+            }            
             return 'fill: ' + color;
         })
         .attr('class', function(d) {
@@ -213,7 +199,10 @@ export class MapComponent implements OnInit, OnChanges {
   }
   
   provinceClass(node) {
+    //console.log('provinceClass', node)
+    // node['owner'] == 'TAG'
       let classes = ['pn'];
+      var inactive = false;
       
       // Who owns it?
 
@@ -234,40 +223,44 @@ export class MapComponent implements OnInit, OnChanges {
       
       // Check _filters and ignore any others if we're filtered out
       if (this._filters.hre === true) {
-        if (node['hre'] === true) {
-          return classes.join(' ');
-        } else {
-          if (water === false && node['wasteland'] === false) {
-            classes.push('pinactive');
-          }
-          return classes.join(' ');
-        }
+        var inactive = this.ifInactive(node, node.hre, true);
       }
       if (this._filters.province_r) {
-        if (node['religion'] === this._filters.province_r) {
-          return classes.join(' ');
-        } else {
-          if (water === false && node['wasteland'] === false) {
-            classes.push('pinactive');
-          }
-        }
-        return classes.join(' ');
+        var inactive = this.ifInactive(node, node.religion, this._filters.province_r);
       }
       if (this._filters.province_c) {
-        if (node['culture'] === this._filters.province_c) {
-          return classes.join(' ');
+        var inactive = this.ifInactive(node, node.culture, this._filters.province_c);
+      }
+      if (this._filters.tradegood) {
+        if (this.ds.provinces[node.id] !== undefined) {
+          //console.log('compare', this.ds.provinces[node.id].trade, this._filters.tradegood);
+          var inactive = this.ifInactive(node, this.ds.provinces[node['id']].trade, this._filters.tradegood);
         } else {
-          if (water === false && node['wasteland'] === false) {
-            classes.push('pinactive');
-          }
+          var inactive = true;
         }
-        return classes.join(' ');
       }
       // tradegood
       // country_r/c
 
+      if (inactive === true) {
+        classes.push('pinactive');
+      }
+
       // Is it uncolonized?
       return classes.join(' ');
+  }
+
+  ifInactive(node, field, testvalue) {
+    let water = node['sea'] === true || node['ocean'] === true || node['lake'] === true;
+    if (field === testvalue) {
+      return false;
+    } else {
+      // We want to set this to inactive, unless its water/wasteland
+      if (water === false && node['wasteland'] === false) {
+        return true;
+      }
+    }
+    return false;
   }
     
   // Get country this belongs to

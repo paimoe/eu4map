@@ -41,6 +41,8 @@ export class Filters {
   hre: boolean = false;
   releaseable: boolean = false;
   tradenodes: boolean = false;
+  tradegoods: boolean = false; // when viewing all trade goods
+  tradegood: string = ''; // when just viewing one trade good
   
   // make a list of exclusives, and when we enable one, all the other exclusives are removed
   formable: boolean = false;
@@ -60,17 +62,16 @@ export class Filters {
   // can we add a set/get and a toggle()? would be easier, and resetAll()
   reset() {
     console.log('resetting filters!!!!')
-    this.hre = this.releaseable = this.formable = false;
-    this.province_r = this.province_c = this.country_r = this.country_c = '';
+    this.hre = this.releaseable = this.formable = this.tradegoods = false;
+    this.province_r = this.province_c = this.country_r = this.country_c = this.tradegood = '';
 
     this._filters.next('calling next() in reset()')
   }
   
   toggle(choice, value) {
     console.log('CHOICE TOGGLE', choice, this[choice], value, typeof(this[choice]));
-    if (choice === 'none') {
-      this.reset();
-    } else {
+    this.reset();
+    if (choice !== 'none') {
       if (typeof this[choice] === "boolean") {
         this[choice] = !this[choice];
       } else if (typeof this[choice] == "string") {

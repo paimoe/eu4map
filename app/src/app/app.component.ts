@@ -30,6 +30,7 @@ export class AppComponent implements OnInit, OnChanges {
   
   ngOnInit() {
     console.log('init entire app, load all the data');
+    this.ds = this.dataStore;
     
     // Ideally cache in IndexedDB, but we can wait
     var self = this;
@@ -48,8 +49,6 @@ export class AppComponent implements OnInit, OnChanges {
       self.dataStore.tradenodes = datas[3];
       self.dataStore.game       = datas[4]; // Things in data/_all.json
       self.dataStore.save       = datas[5]; // Example save game from day1 with diplomacy set
-
-      self.ds = self.dataStore;
       
       // Get all unique like religions/cultures?
 
@@ -120,15 +119,16 @@ export class AppComponent implements OnInit, OnChanges {
       c['subjects'] = [];
     }
     //var deps = ['']
+    var self = this;
     _.each(this.dataStore.save.diplomacy, (kind, idx) => {
       //console.log('kind', kind, idx);
       _.each(kind, (data, idx2) => {
         //this.dataStore.countries
         if (idx == 'dependency') {
           // Get both countries
-          this.ds.countries[data.first].subjects = this.ds.countries[data.first].subjects || [];
-          this.ds.countries[data.first].subjects.push(data);
-          this.ds.countries[data.second].subject_of = data;
+          self.ds.countries[data.first].subjects = self.ds.countries[data.first].subjects || [];
+          self.ds.countries[data.first].subjects.push(data);
+          self.ds.countries[data.second].subject_of = data;
         }
       });
     });
