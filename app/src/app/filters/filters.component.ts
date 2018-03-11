@@ -66,9 +66,14 @@ export class FiltersComponent implements OnInit {
   }
 
   filterType(which) {
-    this.type = which;
-    // we selected a filter type, so show the dropdown, and show the details panel differently
-    this._filters.showFilterDetails(which);
+    if (this.type == which) {
+      this.type = null;
+      this._filters.hideFilterDetails(which);
+    } else {
+      this.type = which;
+      // we selected a filter type, so show the dropdown, and show the details panel differently
+      this._filters.showFilterDetails(which);
+    }
   }
 
   setTarget(which) {

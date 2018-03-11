@@ -18,7 +18,7 @@
 
         <div class="pure-u-1-2">
             <div class="box">
-                <a href="#" (click)="filter('province_r', sp.religion)" class="tooltip-left cap mid" data-tooltip="Provinces with this religion">{{ sp.religion }}</a>
+                <img [src]="'assets/i/religion/' + sp.religion + '.png'" class="icon" /><a (click)="filter('province_r', sp.religion)" class="tooltip-left cap mid" data-tooltip="Provinces with this religion">{{ sp.religion }}</a>
             </div>
         </div>
         <div class="pure-u-1-2">
@@ -52,7 +52,7 @@
 
             <div class="pure-u-1-2">
                 <div class="box">
-                    <a (click)="filter('country_r', sCountry.religion)" class="tooltip-left cap mid" data-tooltip="Countries with this religion">{{ sCountry.religion }}</a>
+                    <img [src]="'assets/i/religion/' + sCountry.religion + '.png'" class="icon" /><a (click)="filter('country_r', sCountry.religion)" class="tooltip-left cap mid" data-tooltip="Countries with this religion">{{ sCountry.religion }}</a>
                 </div>
             </div>
             <div class="pure-u-1-2">
@@ -67,7 +67,8 @@
                     <span [hidden]="countryInfo.subject_of.subject_type != 'vassal'">Vassal of</span>
                     <span [hidden]="countryInfo.subject_of.subject_type != 'personal_union'">Union under</span>
                     <span [hidden]="countryInfo.subject_of.subject_type != 'march'">March of </span>
-                    <span [hidden]="countryInfo.subject_of.subject_type != 'tributary'">Tributary of </span>
+                    <span [hidden]="countryInfo.subject_of.subject_type != 'tributary_state'">Tributary of </span>
+                    <span [hidden]="countryInfo.subject_of.subject_type != 'daimyo_vassal'">Daimyo of </span>
                     <img class="down" [src]="flag(countryInfo.subject_of.first)" /><a (click)="selection('country', countryInfo.subject_of.first)">{{ countryname(countryInfo.subject_of.first) }}</a>
                 </div>
             </div>

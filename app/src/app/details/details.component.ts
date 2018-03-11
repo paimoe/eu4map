@@ -114,7 +114,7 @@ export class DetailsComponent implements OnInit, OnChanges, OnDestroy {
   
   filter(which, val) {
     console.log('Setting filter', which, val);
-    //this._filters.toggle(which, val);
+    this._filters.toggle(which, val);
   /*
 
     call setFilter() on filtercomponent?
@@ -167,6 +167,7 @@ export class DetailsComponent implements OnInit, OnChanges, OnDestroy {
         'vassal': ['Vassal', 'Vassal.png'],
         'tributary_state': ['Tributary', 'Tributary.png'],
         'march': ['March', 'March.png'],
+        'daimyo_vassal': ['Daimyo', 'Vassal.png'],
         // colony Colonial.png
       };
       //console.log(c, strs);

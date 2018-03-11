@@ -48,7 +48,7 @@ img.flag32 {
 }
 
 #part-filters {
-  height: 70px;
+  min-height: 70px;
 }
 #part-map {
   height: calc(100vh - 71px);

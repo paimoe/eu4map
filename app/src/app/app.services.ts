@@ -105,4 +105,10 @@ export class Filters {
     this.selectedProvince = 0;
     this._filters.next('showFilterDetails' + which);
   }
+
+  hideFilterDetails(which) {
+    // but don't disable the filter
+    this.showingFiltered = false;
+    this.selectedProvince = 0;
+  }
 }
