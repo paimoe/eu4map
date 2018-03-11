@@ -2,6 +2,7 @@ import { Component, SimpleChanges, OnChanges, OnInit } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 
 import { DataService, Filters } from './app.services';
+import * as _ from 'underscore';
 
 @Component({
   selector: 'app-root',
@@ -21,11 +22,10 @@ export class AppComponent implements OnInit, OnChanges {
   loaded = false;
   
   data = {}; // data of all the stuff from the json @todo: needed?
-  data_src = {'paths': 'eu4map.json', 'provinces': 'provdata.json', 'countries': 'countries.json', 'tradenodes': 'tradenodes.json', 'game': '_all.json'};
+  data_src = {'paths': 'eu4map.json', 'provinces': 'provdata.json', 'countries': 'countries.json', 'tradenodes': 'tradenodes.json', 'game': '_all.json', 'save': '_day1.json'};
   
   constructor(private http: HttpClient, public dataStore: DataService, public filters: Filters) {
     this.settings['allowZoom'] = true;
-    
   }
   
   ngOnInit() {
@@ -42,18 +42,21 @@ export class AppComponent implements OnInit, OnChanges {
       //console.log('finished all promises', datas);
       
       // Manually for now
-      self.dataStore.paths = datas[0];
-      self.dataStore.provinces = datas[1];
-      self.dataStore.countries = datas[2];
+      self.dataStore.paths      = datas[0];
+      self.dataStore.provinces  = datas[1];
+      self.dataStore.countries  = datas[2];
       self.dataStore.tradenodes = datas[3];
-      self.dataStore.game = datas[4]; // Things in data/_all.json
+      self.dataStore.game       = datas[4]; // Things in data/_all.json
+      self.dataStore.save       = datas[5]; // Example save game from day1 with diplomacy set
 
-      console.log('_all', self.dataStore.game)
+      self.ds = self.dataStore;
       
       // Get all unique like religions/cultures?
 
       self.loaded = true;
       self.redrawMap = true;
+
+      self.applySave();
       
     }, function(err) {
       console.log('err', err);
@@ -107,5 +110,32 @@ export class AppComponent implements OnInit, OnChanges {
     //console.log('FILTERS', choice);
     */
   }
+
+  applySave() {
+    // Map diplomacies + others onto countries
+    console.log('savedata', this.dataStore.save);
+    for (let cid in this.dataStore.countries) {
+      var c = this.dataStore.countries[cid];
+      c['subject_of'] = null;
+      c['subjects'] = [];
+    }
+    //var deps = ['']
+    _.each(this.dataStore.save.diplomacy, (kind, idx) => {
+      //console.log('kind', kind, idx);
+      _.each(kind, (data, idx2) => {
+        //this.dataStore.countries
+        if (idx == 'dependency') {
+          // Get both countries
+          this.ds.countries[data.first].subjects = this.ds.countries[data.first].subjects || [];
+          this.ds.countries[data.first].subjects.push(data);
+          this.ds.countries[data.second].subject_of = data;
+        }
+      });
+    });
+  }
   
+  parseSaveFile(savestr) {
+
+  }
+
 }

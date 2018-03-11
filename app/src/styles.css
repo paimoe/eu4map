@@ -15,6 +15,12 @@ path.hover {
     opacity:0.8;
 }
 
+a {
+  text-decoration:underline;
+  color:#000;
+  cursor:pointer;
+}
+
 /* Provinces */
 .pwaste {
     fill: #414141 !important;

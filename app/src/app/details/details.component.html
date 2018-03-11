@@ -1,51 +1,85 @@
 <!--<div id="details" [hidden]="!_filters.selectedProvince">-->
 <div id="details">
-    <h2 [hidden]="unselected()">{{ selectedProvince.name }}<span>#{{ selectedProvince.id }}</span></h2>
-    <div [ngClass]="{'province':true, 'hre': sp.hre, 'ocean': sp.ocean, 'wl': sp.wasteland}" [hidden]="sp.nonp || unselected()">
-        <div class="development">
-            <div class="r">
-                <div class="xi"><img src="assets/i/Tax_income.png" />{{ sp.tax }}</div>
-                <div class="xi"><img src="assets/i/Production.png" />{{ sp.prod }}</div>
-                <div class="xi"><img src="assets/i/Manpower.png" />{{ sp.man }}</div>
-                <div class="xi tooltip-left cap" (click)="filter('tradegood', selectedProvince.trade)" data-tooltip="Show provinces with this trade good">{{ sp.trade }}</div>
+    <h2 [hidden]="unselected()">{{ sp.name }}<span>#{{ sp.id }}</span></h2>
+    <div [ngClass]="{'province': true, 'pure-g': true, 'hre': sp.hre, 'ocean': sp.ocean, 'wl': sp.wasteland}" [hidden]="sp.nonp || unselected()">
+
+        <div class="pure-u-1-4">
+            <div class="box"><img class="icon" src="assets/i/Tax_income.png" />{{ sp.tax }}</div>
+        </div>
+        <div class="pure-u-1-4">
+            <div class="box"><img class="icon" src="assets/i/Production.png" />{{ sp.prod }}</div>
+        </div>
+        <div class="pure-u-1-4">
+            <div class="box"><img class="icon" src="assets/i/Manpower.png" />{{ sp.man }}</div>
+        </div>
+        <div class="pure-u-1-4">
+            <div class="box tooltip-left cap" (click)="filter('tradegood', sp.trade)" data-tooltip="Show provinces with this trade good">{{ sp.trade }}</div>
+        </div>
+
+        <div class="pure-u-1-2">
+            <div class="box">
+                <a href="#" (click)="filter('province_r', sp.religion)" class="tooltip-left cap mid" data-tooltip="Provinces with this religion">{{ sp.religion }}</a>
             </div>
         </div>
-        <div class="development">
-            <div class="r">
-                <!-- check if htese match the national ones -->
-                <div class="x" style="width:50%"><a href="#" (click)="filter('province_r', selectedProvince.religion)" class="tooltip-left cap mid" data-tooltip="Provinces with this religion">{{ sp.religion }}</a></div>
-                <div class="x" style="width:50%"><a href="#" (click)="filter('province_c', selectedProvince.culture)" class="tooltip-left cap mid" data-tooltip="Provinces with this culture">{{ sp.culture }}</a><span [hidden]="!sp.culturegroup">/</span>{{ sp.culturegroup }}</div>
+        <div class="pure-u-1-2">
+            <div class="box">
+                <a href="#" (click)="filter('province_c', sp.culture)" class="tooltip-left cap mid" data-tooltip="Provinces with this culture">{{ sp.culture }}</a><span [hidden]="!sp.culturegroup">/</span>{{ sp.culturegroup }}
             </div>
         </div>
-        <div class="cores" [hidden]="sp.nonp || !sp.owned">
-            Cores: <span *ngFor="let core of sp.cores"><img src="assets/i/flags/32/{{ core }}.png" [attr.data-tooltip]="'Core of ' + core" class="flag32 down tooltip-left"/></span>
+        <div class="pure-u-1">
+            <div class="cores box" [hidden]="sp.nonp || !sp.owned">
+                Cores: <span *ngFor="let core of sp.cores" [attr.data-tooltip]="countryname(core)" (click)="selection('country', core)"><img src="assets/i/flags/32/{{ core }}.png" class="flag32 down tooltip-left"/></span>
+            </div>
         </div>
-        <div class="claims" [hidden]="sp.nonp || !sp.owned">
-            Claims: <span *ngFor="let core of sp.claims"><img src="assets/i/flags/32/{{ core }}.png" [attr.data-tooltip]="'Claim of ' + core" class="flag32 down tooltip-left"/></span>
+        <div class="pure-u-1">
+            <div class="claims box" [hidden]="sp.nonp || !sp.owned">
+                Claims: <span *ngFor="let core of sp.claims" [attr.data-tooltip]="countryname(core)" (click)="selection('country', claim)"><img src="assets/i/flags/32/{{ core }}.png" class="flag32 down tooltip-left"/></span>
+            </div>
         </div>
     </div>
-    <div class="country" [hidden]="sp.nonp || !sp.owned || unselected()">
-        <h2>{{ sCountry.name }}</h2>
-        <div class="development">
-            <div class="r">
-                <div class="x">{{ countryInfo.totalDev }} dev</div>
-                <div class="x">
-                    <a href="#" class="tooltip-left cap mid" data-tooltip="Countries with this religion">{{ sCountry.religion }}</a>
-                </div>
-                <div class="x">
-                    <a href="#" class="tooltip-left cap mid" data-tooltip="Countries with this culture">{{ sCountry.culture }}</a>
-                </div>
+    <div class="country pure-g" [hidden]="sp.nonp || !sp.owned || unselected()">
+        <h2 class="pure-u-1" style="margin-top:10px">{{ sCountry.name }}</h2>
+        <div class="pure-g">
 
-                <!-- subjects -->
-            </div>
-            <div class="r">
-
-                <div class="x">
-                    IS subejct of {{ sp.is_subject }}
+            <div class="pure-u-1-2">
+                <div class="box" data-tooltip="Capital" *ngIf="countryInfo._capital" (click)="selection('province', countryInfo._capital.id)">
+                    <img src="assets/i/Capital.png" class="down"/>{{ countryInfo._capital.name }}
                 </div>
             </div>
+            <div class="pure-u-1-2">
+                <div class="box" data-tooltip="Development"><img src="assets/i/Development.png" class="down" />{{ countryInfo.totalDev }}</div>
+            </div>
+
+            <div class="pure-u-1-2">
+                <div class="box">
+                    <a (click)="filter('country_r', sCountry.religion)" class="tooltip-left cap mid" data-tooltip="Countries with this religion">{{ sCountry.religion }}</a>
+                </div>
+            </div>
+            <div class="pure-u-1-2">
+                <div class="box">
+                    <a (click)="filter('country_c', sCountry.culture)" class="tooltip-left cap mid" data-tooltip="Countries with this culture">{{ sCountry.culture }}</a>
+                </div>
+            </div>
+            <!-- is subject -->
+
+            <div class="pure-u-1" [hidden]="!countryInfo.subject_data">
+                <div class="box" *ngIf="countryInfo.subject_of != undefined">
+                    <span [hidden]="countryInfo.subject_of.subject_type != 'vassal'">Vassal of</span>
+                    <span [hidden]="countryInfo.subject_of.subject_type != 'personal_union'">Union under</span>
+                    <span [hidden]="countryInfo.subject_of.subject_type != 'march'">March of </span>
+                    <span [hidden]="countryInfo.subject_of.subject_type != 'tributary'">Tributary of </span>
+                    <img class="down" [src]="flag(countryInfo.subject_of.first)" /><a (click)="selection('country', countryInfo.subject_of.first)">{{ countryname(countryInfo.subject_of.first) }}</a>
+                </div>
+            </div>
+            <div class="pure-u-1" *ngIf="countryInfo.has_subjects">
+                <div class="box">
+                    <p *ngFor="let subj  of subjects(countryInfo.subjects)" class="tooltip-left" [attr.data-tooltip]="subj[0][0]">
+                        <img [src]="'assets/i/' + subj[0][1]" class="down" /><a (click)="selection('country', subj[2])">{{ subj[1] }}</a>
+                    </p>
+                </div>
+            </div>
+
         </div>
-        <!-- x uncontrolled cores -->
     </div>
 </div>
 

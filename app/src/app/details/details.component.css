@@ -39,8 +39,23 @@
     border: 1px solid black;
 }
 
-#details .country {
-    
+#details .country, #details .country .pure-g {
+    width:100%;
+}
+div.box {
+    padding:0 5px;
+    background:#eeedf6;;
+    border: 1px solid #938ecb;
+    border-radius: 5px;
+    padding-top:0;
+    margin:3px;
+    line-height:32px;
+}
+div.box a {
+    color: #000;
+}
+div.box p {
+    margin:0;
 }
 
 .development {
@@ -52,7 +67,7 @@
     display:table-row;
     justify-content:space-between;
 }
-.development div.x, div.xi {
+.development div.x, div.xi, div.x2 {
     display:table-cell;
     width:25%;
     padding:5px;
@@ -64,8 +79,34 @@
 .development div.x {
     padding: 5px;
 }
+.development div.x2 {
+    width:100%;
+}
 
-.xi img {
+/* fix for multicol table cell */
+div.block {
+    background:#d1cfe4;
+    border: 1px solid #584dc3;
+    border-radius: 5px;
+    padding-top:0;
+    margin: 0 5px;    
+}
+div.block p {
+    margin: 5px;
+}
+div.block * a {
+    color: #000;
+}
+
+img.flag32 {
+    width: 32px;
+    position:relative;
+    top:5px;
+    border: 1px solid #000;
+    border-radius:2px;
+    margin-right:5px;
+}
+.xi img, img.icon {
     width:24px;
     height:24px;
     position:relative;
@@ -100,4 +141,10 @@ div.x a {
 }
 div.x .mid {
     text-align:center;
+}
+
+p.subjectdata {
+    border-bottom: 1px solid #878383;
+    text-align:center;
+    font-size:80%;
 }

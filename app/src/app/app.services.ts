@@ -9,6 +9,7 @@ export class DataService {
   paths: any;
   tradenodes: any;
   game: any;
+  save: any;
 }
 
 @Injectable() 

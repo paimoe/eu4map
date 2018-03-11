@@ -41,6 +41,7 @@ export class DetailsComponent implements OnInit, OnChanges, OnDestroy {
   ngOnInit() {
     //console.log('details compy');
     this.filtersub = this._filters.obsFilter.subscribe(item => this.test(item))
+    this.ds = this.dataStore;
   }
   
   test(item) {
@@ -62,6 +63,10 @@ export class DetailsComponent implements OnInit, OnChanges, OnDestroy {
   capitalize(s) {
     return s.charAt(0).toUpperCase() + s.slice(1);
   }
+
+  selection(type, which) {
+    console.log('selection()', type, which);
+  }
   
   showDetail() {
     // Hopefully it exists
@@ -82,14 +87,20 @@ export class DetailsComponent implements OnInit, OnChanges, OnDestroy {
     province['nonp'] = province.wasteland || province.ocean || province.sea || province.lake;
     province['owned'] = province['owner'] !== null;
     //console.log('c', province);
-    this.calculateTag(this.sCountry['tag']);
+
+    if (province['owned']) {
+      this.calculateTag(this.sCountry['tag']);
+    }
 
     province['culturegroup'] = undefined;
     // Find culture group
     _.each(this.dataStore.game['cultures'], (val, idx) => {
-      if (val.includes(province['culture'])) {
-        province['culturegroup'] = idx;
-      }
+      //console.log('val', val);
+      
+        if (_.contains(province['culture'], val)) {
+          province['culturegroup'] = idx;
+        }
+      
     });
 
     console.log('cg,', province)
@@ -103,7 +114,7 @@ export class DetailsComponent implements OnInit, OnChanges, OnDestroy {
   
   filter(which, val) {
     console.log('Setting filter', which, val);
-    this._filters.toggle(which, val);
+    //this._filters.toggle(which, val);
   /*
 
     call setFilter() on filtercomponent?
@@ -117,10 +128,56 @@ export class DetailsComponent implements OnInit, OnChanges, OnDestroy {
   calculateTag(tag) {
     let p = _.filter(this.dataStore.provinces, (x) => x['owner'] == tag);
     
-    this.countryInfo = {};
+    this.countryInfo = this.sCountry;
     this.countryInfo['provs'] = p;
     this.countryInfo['totalDev'] = _.reduce(p, (a, b) => a + +b['tax'] + +b['prod'] + +b['man'], 0); // sum the dev
+    //console.log(p);
+    let capital = _.filter(p, (x) => x.id == this.sCountry['capital'])[0];
+    this.countryInfo['_capital'] = capital === undefined ? {} : capital;
     //console.log(this.countryInfo);
+
+    // Do we need info on their subjects?
+    this.countryInfo['subject_data'] = !_.isEmpty(this.countryInfo.subjects) || this.countryInfo.subject_of !== null;
+    this.countryInfo['has_subjects'] = !_.isEmpty(this.countryInfo['subjects']);
+
+    //console.log('subjdata', _.isEmpty(this.countryInfo.subjects), this.countryInfo.subject_of);
+  }
+
+  countryname(tag) {
+    // Get country info for this tag
+    //let country = this.ds.countries[tag];
+    //return country.name;
+    if (!_.isEmpty(tag)) {
+      return this.dataStore.countries[ tag ].name;
+    }
+    return '';
+  }
+  flag(tag) {
+    if (tag.length == 3) {
+      // return url
+      return `assets/i/flags/32/${tag}.png`;
+    }
+  }
+  subjects(subjlist) {
+    if (!_.isEmpty(this.countryInfo) && this.countryInfo['has_subjects']) {
+      let c = this.countryInfo;
+      let subjs = [];
+      let imgs = {
+        'personal_union': ['Personal Union', 'Personal_union.png'],
+        'vassal': ['Vassal', 'Vassal.png'],
+        'tributary_state': ['Tributary', 'Tributary.png'],
+        'march': ['March', 'March.png'],
+        // colony Colonial.png
+      };
+      //console.log(c, strs);
+      for (let s of c['subjects']) {
+        //let t = imgs[s['subject_type']];
+        let n = this.countryname(s['second']);
+        subjs.push([imgs[s['subject_type']], n, s['second']]);
+      }
+      return subjs;
+    } 
+    return ['no subjects'];
   }
 
 }
