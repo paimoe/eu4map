@@ -143,6 +143,9 @@ if __name__ == '__main__':
     elif opts.action == 'save':
         sp = SavegameParser()
         sp.parse()
+    elif opts.action == 'save_day1':
+        sp = SavegameParser()
+        sp.parse_day1()
 
     elif opts.action == 'check':
         print(os.path.exists(os.path.join(EU4_PATH, 'eu4.exe')))

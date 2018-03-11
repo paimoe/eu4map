@@ -3,6 +3,7 @@ import json, os, re
 from collections import OrderedDict
 
 from parsers.base import DataParser_save
+from timeit import default_timer as timer
 
 from .units import UnitsParser
 
@@ -30,6 +31,27 @@ class SavegameParser(DataParser_save):
                 keylist.append(keyfinder(x))
         return keylist
 
+
+
+    def parse_day1(self):
+        self.cs.start()
+        self.output = 'output/saves/_day1.json'
+
+        SAVE_URL = os.path.join('sources', 'day1save.eu4')
+
+        with open(SAVE_URL, 'r', encoding='latin-1') as f:
+            data = self.oneline(f.read())
+
+        data = self.apply_whitelist(data, ret=True)
+
+        # Whitelist only
+        whitelisted_data = {
+            'diplomacy': data['diplomacy'],
+            'institutions': data['institutions'],
+        }
+
+        self.save(whitelisted_data)
+
     def parse(self, one=None): 
         self.cs.start()
 
@@ -41,31 +63,11 @@ class SavegameParser(DataParser_save):
             with open(test_save_url, 'r', encoding='latin-1') as f:
                 savefile = f.read()
 
-            #print('COUNT BRACES')
-            #print(savefile.count('}'))
-
-            # All collectibles in a save file
-            # should have discovered_by, but we also have like history { discovered_by=western, discovered_by=east }, so some history events have lost that
-            # NEED: ability to set these listkeys as a child of something, so eg only 'X' if its inside a block of 'Y', rather than global
-            #collect = ['dlc_enabled','setgameplayoptions', 'id_counters', 'institutions', 'institution_origins', 'friend_bools', 'produced_goods_value', 'num_of_goods_produced', 'traded',
-            #'num_of_leaders', 'num_of_leaders_with_traits', 'num_of_free_leaders', 'border_provinces', 'neighbours', 'home_neighbours', 'core_neighbours', 'score_rating', 'score_rank', 'age_score',
-            #'inflation_history', 'opinion_cache', 'under_construction', 'under_construction_queued', 'total_count', 'owned_provinces', 'controlled_provinces', 'core_provinces',
-            #'idea_may_cache', 'income', 'expense', 'lastmonthincometable', 'lastmonthexpensetable', 'totalexpensetable', 'lastyearincome', 'lastyearexpense', 'active_loyalties', 'active_influences',
-            #'changed_country_mapcolor_from', 'map_color', 'country_color', 'powers', 'members', 'mothballed_forts',
-            #'electors'] + ['attackers', 'defenders', 'persistent_attackers', 'persistent_defenders']
-
-            # Cleanup for mangled parts
-            #fixparts = {'map_area_data {': 'map_area_data = {'}
-
-            # Don't combine these
-            #seperate = {
-            #    'active_war': ['participants', 'attackers', 'history']
-            #}
-
-            #skip=['EU4txt', 'rebel_faction']
-
             #o = self.oneline(savefile, skip=['EU4txt'], makelistkeys=collect, fixparts=fixparts, seperate2=['active_war'])#, seperate=seperate)
+            s = timer()
             o = self.oneline(savefile)
+            e = timer()
+            print('TIME BRO', e - s)
 
             #pprint.pprint(aw)
             #print(o['b'])
@@ -82,8 +84,8 @@ class SavegameParser(DataParser_save):
         #return o
         if self.FULL and not test_save_url.endswith('test.eu4'):
             self.save(o)
-
-    def apply_whitelist(self, d):
+            
+    def apply_whitelist(self, d, ret=False):
         """
         Almost definitely don't want:
         - active_advisors
@@ -228,7 +230,10 @@ class SavegameParser(DataParser_save):
             save['active_war'][i]['participants']['losses']['members'] = members
         """
         # zip institutions info together institions,inst_origin, inst_penalties
-        save['institutions'] = list(zip(d['institutions'], d['institution_origin'], d['institutions_penalties'][0]))
+        save['institutions'] = list(zip(d['institutions'], d['institution_origin'], d['institutions_penalties']))
+
+        if ret:
+            return save
 
         if not self.FULL:
             with open('output/save_whitelisted.json', 'w') as f:

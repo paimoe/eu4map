@@ -532,6 +532,13 @@ class DataParser_save(object):
     def oneline(self, t, **kwargs):
         """
         """
+        # Check if t is path first, then load, otherwise, parse string
+        pf = ParseFile(t)
+        compiled = pf.parse()
+
+        return compiled
+        #print(compiled)
+        #assert False, 'oneline'
         skip = kwargs.get('skip', [])
         fixparts = kwargs.get('fixparts', {})
 
