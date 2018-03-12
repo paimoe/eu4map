@@ -1,7 +1,7 @@
 import { Component, SimpleChanges, OnChanges, OnInit } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 
-import { DataService, Filters } from './app.services';
+import { DataService, Filters, Actions } from './app.services';
 import * as _ from 'underscore';
 
 @Component({
@@ -11,6 +11,7 @@ import * as _ from 'underscore';
 })
 export class AppComponent implements OnInit, OnChanges {
   
+  ds: DataService;
   private data_paths = [];
   
   title = 'EU4 Map';
@@ -24,7 +25,7 @@ export class AppComponent implements OnInit, OnChanges {
   data = {}; // data of all the stuff from the json @todo: needed?
   data_src = {'paths': 'eu4map.json', 'provinces': 'provdata.json', 'countries': 'countries.json', 'tradenodes': 'tradenodes.json', 'game': '_all.json', 'save': '_day1.json'};
   
-  constructor(private http: HttpClient, public dataStore: DataService, public filters: Filters) {
+  constructor(private http: HttpClient, public dataStore: DataService, public filters: Filters, public actions: Actions) {
     this.settings['allowZoom'] = true;
   }
   

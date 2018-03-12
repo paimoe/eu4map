@@ -1,5 +1,5 @@
 <!--<div id="details" [hidden]="!_filters.selectedProvince">-->
-<div id="details">
+<div id="details" class="detail" [hidden]="show != 'province'">
     <h2 [hidden]="unselected()">{{ sp.name }}<span>#{{ sp.id }}</span></h2>
     <div [ngClass]="{'province': true, 'pure-g': true, 'hre': sp.hre, 'ocean': sp.ocean, 'wl': sp.wasteland}" [hidden]="sp.nonp || unselected()">
 
@@ -42,7 +42,7 @@
         <div class="pure-g">
 
             <div class="pure-u-1-2">
-                <div class="box" data-tooltip="Capital" *ngIf="countryInfo._capital" (click)="selection('province', countryInfo._capital.id)">
+                <div class="box" data-tooltip="Capital" *ngIf="countryInfo._capital" (click)="actions.commit('province', countryInfo._capital.id)">
                     <img src="assets/i/Capital.png" class="down"/>{{ countryInfo._capital.name }}
                 </div>
             </div>
@@ -84,6 +84,10 @@
     </div>
 </div>
 
+<div id="tradenode" class="detail" [hidden]="show != 'tradenode'">
+    <h2>{{ tnode.name }}</h2>
+</div>
+
 <!-- div for displaying details about the filtered object -->
 <div id="filterdetails" [hidden]="_filters.selectedProvince">
     <h2>MAP DEETAILS</h2>
@@ -96,5 +100,5 @@
 -->
 
 <div class="credits">
-    <p>EU4Map &middot; 2018 &middot; <a href="https://github.com/paimoe/eu4map">github</a></p>
+    <p>Europa Universalis Map &middot; 2018 &middot; <a href="https://github.com/paimoe/eu4map">github</a></p>
 </div>

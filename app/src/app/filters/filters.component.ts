@@ -10,6 +10,7 @@ export class FiltersComponent implements OnInit {
   
   _defaults: any;
   type: string;
+  ds: DataService;
 
   @Input() loadedReceiver: boolean;
   

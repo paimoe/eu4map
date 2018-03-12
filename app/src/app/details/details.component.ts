@@ -1,5 +1,5 @@
 import { Component, OnInit, Output, EventEmitter, Input, OnChanges, SimpleChanges, OnDestroy } from '@angular/core';
-import { DataService, Filters } from '../app.services';
+import { DataService, Filters, Actions } from '../app.services';
 import { Subscription } from 'rxjs/Subscription';
 
 import * as _ from 'underscore';
@@ -12,6 +12,7 @@ import * as _ from 'underscore';
 export class DetailsComponent implements OnInit, OnChanges, OnDestroy {
   
   allowZoom = true;
+  ds: DataService;
   @Output() onSetting = new EventEmitter();
   @Output() onFilter = new EventEmitter();
   @Input() provinceID: number = 0;
@@ -19,18 +20,29 @@ export class DetailsComponent implements OnInit, OnChanges, OnDestroy {
   sp: any = {}; // just a shorthand
   sCountry: any = {};
   countryInfo: any = {};
+  tnode: any = {};
+
+  show: string = 'none'; // which detail panel to show
   
   filtersub: Subscription;
+  actionsub: Subscription;
 
   //data-tooltip: any;
   
-  constructor(public dataStore: DataService, public _filters: Filters) { }
+  constructor(public dataStore: DataService, public _filters: Filters, public actions: Actions) { }
   
   ngOnChanges(changes: SimpleChanges) {
     //console.log('DETAIL UPDATE', changes);
     // Probably just the province id selected lul
     if (this.provinceID != 0) {
-      this.showDetail();
+      //let province = this.dataStore.provinces[this.provinceID];
+      //console.log('provid', this.provinceID)
+      if (this._filters.tradenodes) {
+        // show trade details
+        this.showTradeNode();
+      } else {
+        this.showDetail();
+      }
     }
   }
   
@@ -41,7 +53,24 @@ export class DetailsComponent implements OnInit, OnChanges, OnDestroy {
   ngOnInit() {
     //console.log('details compy');
     this.filtersub = this._filters.obsFilter.subscribe(item => this.test(item))
+    this.actionsub = this.actions.obsAction.subscribe(item => this.action_in(item));
+
     this.ds = this.dataStore;
+  }
+
+  action_in(item) {
+    console.log('got new action in details: ', item);
+    if (item !== null) {
+      let sp = item[0].split('_');
+      if (sp[0] == 'details') {
+        switch (sp[1]) {
+        }
+      }
+    }
+  }
+  action_out(field, value) {
+    console.log('sending action from details', field, value)
+    this.actions.commit(field, value);
   }
   
   test(item) {
@@ -65,11 +94,13 @@ export class DetailsComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   selection(type, which) {
-    console.log('selection()', type, which);
+    //console.log('selection()', type, which);
+    this.action_out('map_zoomTo', which);
   }
   
   showDetail() {
     // Hopefully it exists
+    this.show = 'province';
     let province = this.dataStore.provinces[this.provinceID];
 
     // Flatten since our parser is trash
@@ -110,6 +141,14 @@ export class DetailsComponent implements OnInit, OnChanges, OnDestroy {
 
     this.selectedProvince = province;
     this.sp = province;
+  }
+
+  showTradeNode() {
+    let province = this.dataStore.provinces[this.provinceID];
+    console.log('show trade node data', province.tradenode.name, this.ds.tradenodes[province.tradenode.name]);
+    this.show = 'tradenode';
+
+    this.tnode.name = province.tradenode.name;
   }
   
   filter(which, val) {

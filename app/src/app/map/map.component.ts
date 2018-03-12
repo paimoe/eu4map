@@ -1,7 +1,8 @@
 import { Component, OnInit, Output, EventEmitter, Input, OnChanges, SimpleChanges } from '@angular/core';
 import * as d3 from 'd3';
-import { DataService, Filters } from '../app.services';
+import { DataService, Filters, Actions } from '../app.services';
 import { Subscription } from 'rxjs/Subscription';
+import * as _ from 'underscore';
 
 @Component({
   selector: 'app-map',
@@ -15,6 +16,7 @@ export class MapComponent implements OnInit, OnChanges {
   
   dataPaths: any;
   dataProvinces: any;
+  ds: DataService;
   
   @Input() appSettings;
   @Input() title: string;
@@ -23,12 +25,12 @@ export class MapComponent implements OnInit, OnChanges {
   @Input() redrawMap;
   
   filtersub: Subscription;
+  actionsub: Subscription;
   
-  constructor(public dataStore: DataService, public _filters: Filters) {
+  constructor(public dataStore: DataService, public _filters: Filters, public actions: Actions) {
   }
   
   ngOnChanges(changes: SimpleChanges) {
-    //console.log('datastore', this.dataStore)
     //console.log('map changes func',changes);
     let key = Object.keys(changes)[0];
     if (key == 'filtersChanged') {
@@ -43,7 +45,7 @@ export class MapComponent implements OnInit, OnChanges {
     }
   }
   
-  toggleZoom(): void {
+  toggleZoom() {
     let allow = this.appSettings['allowZoom'];
     if (allow === true) {
       // Allow zoom
@@ -66,9 +68,25 @@ export class MapComponent implements OnInit, OnChanges {
     this.filtersub.unsubscribe();
   }
 
+  action_in(item) {
+    console.log('got new action in map: ', item);
+    if (item !== null) {
+      let sp = item[0].split('_');
+      if (sp[0] == 'map') {
+        switch (sp[1]) {
+          case 'zoomTo':
+            this.zoomToProvince(item[1]);
+            break;
+        }
+      }
+    }
+  }
+
   ngOnInit() {
     //console.log('mapComponent ngOninit()');
     this.filtersub = this._filters.obsFilter.subscribe(item => this.filtersChanged(item));
+    this.actionsub = this.actions.obsAction.subscribe(item => this.action_in(item));
+
     this.ds = this.dataStore;
     
     //this.filtersub = this._filters.obsFilter.subscribe(item => this.filtersChanged(item))
@@ -82,6 +100,8 @@ export class MapComponent implements OnInit, OnChanges {
         'scale': 1.3
     };
     var defaulttransformstr = 'translate(1500,-400) scale(-0.05, 0.05)';
+
+    var enableDragging = true;
     
     var svg = d3.select('#svg svg')
         .attr('width', '100%')
@@ -89,19 +109,21 @@ export class MapComponent implements OnInit, OnChanges {
         //.style('border', '1px solid black')
     
         // Use switching for now :(
-        .on('contextmenu', function(d) {
-            d3.event.preventDefault();
-            // Switch 
-            let e = d3.select('#dragger');
-            let paths = d3.selectAll('path');
-            if (e.style['pointer-events'] == 'all') {
-                e.style['pointer-events'] = 'none';
-                paths.classed('pn', false);
-            } else {
-                e.style['pointer-events'] = 'all';
-                paths.classed('pn', true);
-            }
-        });
+        if (enableDragging) {
+          svg.on('contextmenu', function(d) {
+              d3.event.preventDefault();
+              // Switch 
+              let e = d3.select('#dragger');
+              let paths = d3.selectAll('path');
+              if (e.style['pointer-events'] == 'all') {
+                  e.style['pointer-events'] = 'none';
+                  paths.classed('pn', false);
+              } else {
+                  e.style['pointer-events'] = 'all';
+                  paths.classed('pn', true);
+              }
+          });
+        }
     
     var container = svg.append('g');
     
@@ -112,13 +134,15 @@ export class MapComponent implements OnInit, OnChanges {
         .on('start', this.zoomStart)
         .on('end', this.zoomEnd);
     
-    var rect = container.append("rect")
-        .attr('id', 'dragger')
-        .attr("class", "overlay")
-        .attr("width", '100%')
-        .attr("height", '100%')
-        .style('pointer-events', 'all')
-        .call(zoom);
+    if (enableDragging) {
+      var rect = container.append("rect")
+          .attr('id', 'dragger')
+          .attr("class", "overlay")
+          .attr("width", '100%')
+          .attr("height", '100%')
+          .style('pointer-events', 'all')
+          .call(zoom);
+    }
     
     var paths = svg.append('g').attr('id', 'paths');
   }
@@ -151,7 +175,7 @@ export class MapComponent implements OnInit, OnChanges {
     let build = d3.select('#paths').selectAll('g')
         .data(pathsdata).enter()
         .append('g')
-        .attr('transform', 'translate(0.000000,2048.000000) scale(0.100000,-0.100000)');
+        .attr('transform', 'translate(0.000000,2048.000000) scale(0.1,-0.1)');
 
     let path = build.append('path')
         .attr('id', (x) => 'province_' + x['id'])
@@ -169,17 +193,7 @@ export class MapComponent implements OnInit, OnChanges {
     // Apply these every time
     d3.selectAll('path')
         .attr('style', function(d) {
-            // If country exists                    
-            let c = self.getCountry(d['owner']);
-            if (c === false) {
-                var color = 'gray';
-            } else {
-                if (!c['color']) {
-                    console.log('NO COLOR: ', c['name']);
-                }
-                var color = '#' + c['color'];
-            }            
-            return 'fill: ' + color;
+            return self.provinceStyle(d);
         })
         .attr('class', function(d) {
             return self.provinceClass(d);
@@ -191,11 +205,15 @@ export class MapComponent implements OnInit, OnChanges {
     // Add text on top? and maybe a star for the capital?
     /*build.append('text')
         .text('This is text')
-        .attr('x', 0)
-        .attr('y', 0)
+        .attr('dx', 100)
+        .attr('dy', -100)
         .style('fill', 'white')
+        .attr('font-size', 35)
+        .attr('transform', 'scale(1, -1)')
         ;
     */
+
+    // Draw seperate trade arrows/routes
   }
   
   provinceClass(node) {
@@ -203,6 +221,8 @@ export class MapComponent implements OnInit, OnChanges {
     // node['owner'] == 'TAG'
       let classes = ['pn'];
       var inactive = false;
+      var prov = this.ds.provinces[node.id];
+      var is_prov = prov !== undefined;
       
       // Who owns it?
 
@@ -232,9 +252,9 @@ export class MapComponent implements OnInit, OnChanges {
         var inactive = this.ifInactive(node, node.culture, this._filters.province_c);
       }
       if (this._filters.tradegood) {
-        if (this.ds.provinces[node.id] !== undefined) {
+        if (is_prov) {
           //console.log('compare', this.ds.provinces[node.id].trade, this._filters.tradegood);
-          var inactive = this.ifInactive(node, this.ds.provinces[node['id']].trade, this._filters.tradegood);
+          var inactive = this.ifInactive(node, prov.trade, this._filters.tradegood);
         } else {
           var inactive = true;
         }
@@ -248,6 +268,38 @@ export class MapComponent implements OnInit, OnChanges {
 
       // Is it uncolonized?
       return classes.join(' ');
+  }
+
+  provinceStyle(node) {
+    // If country exists                    
+    let c = this.getCountry(node['owner']);
+    var color = 'gray';
+    if (c !== false) {
+        if (!c['color']) {
+            //console.log('NO COLOR: ', c['name']);
+        }
+        var color = '#' + c['color'];
+    }            
+
+    // Check for filters
+    if (this._filters.tradenodes) {
+      // Set color to the tradenode it's in
+      for (let idx in this.ds.tradenodes) {
+        var item = this.ds.tradenodes[idx];
+        //console.log('item', item);
+
+        if ('color' in item && _.contains(item.members, node.id)) {
+          var col = item['color'];
+          var color = 'rgb(' + col[0] + ',' + col[1] + ',' + col[2] + ')';
+        }
+      }
+      /*var tnode = this.ds.tradenodes[node.tradenode.name];
+      if ('color' in tnode) {
+        var color = 'rgb(' + tnode.color[0] + ',' + tnode.color[1] + ',' + tnode.color[2] + ')';
+      }*/
+    }
+
+    return 'fill: ' + color;
   }
 
   ifInactive(node, field, testvalue) {
@@ -292,6 +344,20 @@ export class MapComponent implements OnInit, OnChanges {
     //console.log('zoom end');
   }
   
-  zoomToProvince(provid, zoomLevel) {}
+  zoomToProvince(provid, zoomLevel) {
+    // Get bbox and translate
+    let prov = document.querySelector('#province_' + provid);
+    if (prov !== null) {
+      var box = prov.getBBox();
+
+      // revert the initial transform data
+      //.attr('transform', 'translate(0.000000,2048.000000) scale(0.100000,-0.100000)');
+      var x1 = box.x * 0.1 + 0;
+      var y2 = box.y * -0.1 + 2048;
+      // For it to be on screen, have to also use the height
+      var y2 = y2 - box.height * 0.1;
+      console.log('position of province top left and bottom right: ', x1, y2)
+    }
+  }
 
 }

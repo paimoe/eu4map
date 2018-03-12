@@ -7,7 +7,7 @@ import { MapComponent } from './map/map.component';
 import { DetailsComponent } from './details/details.component';
 
 import { HttpClientModule } from '@angular/common/http';
-import { DataService, Filters } from './app.services';
+import { DataService, Filters, Actions } from './app.services';
 import { FiltersComponent } from './filters/filters.component';
 
 @NgModule({
@@ -21,7 +21,7 @@ import { FiltersComponent } from './filters/filters.component';
     BrowserModule,
     HttpClientModule
   ],
-  providers: [DataService, Filters],
+  providers: [DataService, Filters, Actions],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

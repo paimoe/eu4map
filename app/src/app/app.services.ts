@@ -12,6 +12,21 @@ export class DataService {
   save: any;
 }
 
+@Injectable()
+export class Actions {
+
+  private _action = new BehaviorSubject<any>(null);
+  obsAction = this._action.asObservable();
+  action: string = '';
+  value: string = '';
+
+  commit(field, value) {
+    this.action = field;
+    this.value = value;
+    this._action.next([field, value]);
+  }
+}
+
 @Injectable() 
 export class Filters {
   /*
@@ -42,7 +57,6 @@ export class Filters {
   releaseable: boolean = false;
   tradenodes: boolean = false;
   tradegoods: boolean = false; // when viewing all trade goods
-  tradegood: string = ''; // when just viewing one trade good
   
   // make a list of exclusives, and when we enable one, all the other exclusives are removed
   formable: boolean = false;
@@ -62,7 +76,7 @@ export class Filters {
   // can we add a set/get and a toggle()? would be easier, and resetAll()
   reset() {
     console.log('resetting filters!!!!')
-    this.hre = this.releaseable = this.formable = this.tradegoods = false;
+    this.hre = this.releaseable = this.formable = this.tradegoods = this.tradenodes = false;
     this.province_r = this.province_c = this.country_r = this.country_c = this.tradegood = '';
 
     this._filters.next('calling next() in reset()')
