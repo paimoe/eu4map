@@ -34,6 +34,8 @@ export class Filters {
   FilterComponent only reads, and calls set()/reset() etc
   */
  
+  // Not really used as a filter, but a way to pass message to the map
+  mapAction: any = {};
    
   // Where we store our info, when it changes, it sends out events
   private _filters = new BehaviorSubject<any>(null);

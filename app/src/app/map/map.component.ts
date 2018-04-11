@@ -75,7 +75,10 @@ export class MapComponent implements OnInit, OnChanges {
       if (sp[0] == 'map') {
         switch (sp[1]) {
           case 'zoomTo':
-            this.zoomToProvince(item[1]);
+            this.zoomToCountry(item[1],1);
+            break;
+          case 'zoomToProv':
+            this.zoomToProvince(item[1],1);
             break;
         }
       }
@@ -225,6 +228,14 @@ export class MapComponent implements OnInit, OnChanges {
       var is_prov = prov !== undefined;
       
       // Who owns it?
+      var country = null;
+      if (node.owner !== null) {
+        let c = this.ds.countries[node.owner]; 
+        if (c !== undefined) {
+          var country = this.ds.countries[node.owner];
+        }
+      }
+      //console.log('country', country);
 
       // Is it wasteland?
       if (node['wasteland'] === true) {
@@ -250,6 +261,19 @@ export class MapComponent implements OnInit, OnChanges {
       }
       if (this._filters.province_c) {
         var inactive = this.ifInactive(node, node.culture, this._filters.province_c);
+      }
+      // if this province is in a country that passes the filter
+      if (this._filters.country_r) {
+        if (country !== null) {
+          let field = country['religion'];
+          var inactive = this.ifInactive(node, field, this._filters.country_r);
+        }
+      }
+      if (this._filters.country_c) {
+        /*if (country !== null) {
+          let field = country['culture'];
+          var inactive = this.ifInactive(node, field, this._filters.country_r);
+        }*/
       }
       if (this._filters.tradegood) {
         if (is_prov) {
@@ -347,7 +371,7 @@ export class MapComponent implements OnInit, OnChanges {
   zoomToProvince(provid, zoomLevel) {
     // Get bbox and translate
     let prov = document.querySelector('#province_' + provid);
-    if (prov !== null) {
+    if (prov !== null && prov.hasOwnProperty('getBBox')) {
       var box = prov.getBBox();
 
       // revert the initial transform data
@@ -358,6 +382,23 @@ export class MapComponent implements OnInit, OnChanges {
       var y2 = y2 - box.height * 0.1;
       console.log('position of province top left and bottom right: ', x1, y2)
     }
+  }
+
+  zoomToCountry(tag, zoomLevel) {
+    /*console.log('in zoomToCountry', tag)
+    let provs = this.ds.countries[tag].provs;
+    var bounds = {'top': -Infinity, 'bot': -Infinity, 'left': -Infinity, 'right': -Infinity};
+
+    if (provs.length > 0) {
+      // find boundaries of all these provinces
+      for (let id of provs) {
+        let p = document.querySelector('#province_' + id);
+        let box = p.getBBox();
+        console.log(box);
+      }
+    }
+    // find all provinces in this country
+    */
   }
 
 }

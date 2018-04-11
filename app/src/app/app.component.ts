@@ -15,7 +15,7 @@ export class AppComponent implements OnInit, OnChanges {
   private data_paths = [];
   
   title = 'EU4 Map';
-  settings = {};
+  settings: any = {};
   allowZoom = true;
   provinceID = 0;
   //filtersChanged = false;
@@ -121,15 +121,29 @@ export class AppComponent implements OnInit, OnChanges {
     }
     //var deps = ['']
     var self = this;
+    // compile provinces per country
+    _.each(this.ds.provinces, (prov, idx) => {
+      if (prov.hasOwnProperty('owner')) {
+        var owner = prov['owner'];
+        if (owner !== null) {
+          // assign to country
+          self.ds.countries[owner].provs = self.ds.countries[owner].provs || [];
+          self.ds.countries[owner].provs.push(prov['id']);
+        }
+      }
+    });
+
     _.each(this.dataStore.save.diplomacy, (kind, idx) => {
       //console.log('kind', kind, idx);
       _.each(kind, (data, idx2) => {
         //this.dataStore.countries
-        if (idx == 'dependency') {
-          // Get both countries
-          self.ds.countries[data.first].subjects = self.ds.countries[data.first].subjects || [];
-          self.ds.countries[data.first].subjects.push(data);
-          self.ds.countries[data.second].subject_of = data;
+        if (typeof idx === "string") {
+          if (idx === 'dependency') {
+            // Get both countries
+            self.ds.countries[data.first].subjects = self.ds.countries[data.first].subjects || [];
+            self.ds.countries[data.first].subjects.push(data);
+            self.ds.countries[data.second].subject_of = data;
+          }
         }
       });
     });
