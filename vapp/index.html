@@ -1,0 +1,315 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>EU4 VMap</title>
+  <base href="/">
+  <link rel="stylesheet" href="https://unpkg.com/purecss@1.0.0/build/pure-min.css" integrity="sha384-nn4HPE8lTHyVtfCBi5yW9d20FjT8BJwUXyWZT9InLYax14RDjBj46LmSztkmNP9w" crossorigin="anonymous">
+  <link rel="stylesheet" type="text/css" href="/styles.css"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" type="image/x-icon" href="favicon.ico">
+</head>
+<body>
+    <div id="container">
+        <filters></filters>
+
+
+        <div class="pure-g">
+            <div class="pure-u-3-4" id="part-map">
+                <eumap></eumap>
+            </div>
+            <div class="pure-u-1-4" style="background:#414141" id="part-details">
+                <detailspane></detailspane>
+            </div>
+        </div>
+    </div> <!-- /container -->
+
+    <!-- components -->
+    <template id="filters">
+        <div class="pure-g" id="part-filters">
+            <div class="pure-u-5-5">
+                <ul class="filterlist">
+                    <li class="label">FILTERS</li>
+                    <li class="reset" v-on:click="setFilter('none')">RESET</li>
+                    <li v-on:click="filterType('provinces')" class="u">Province Data</li>
+                    <li v-on:click="filterType('religion')" class="u">Religions</li>
+                    <li v-on:click="setFilter('hre')" class="u">HRE</li>
+                    <li v-on:click="setFilter('tradenodes')" class="u">Trade</li>
+                    <li class="i"><small>Right click to switch between pan/select</small></li>
+                    <!-- pull this right -->
+                    <li class="filterswitches">
+                        <div>
+                            <a href="#p" v-on:click="setTarget('provinces')" v-bind:class="{'active': opts.target == 'provinces', 'tooltip-bottom': true}" data-tooltip="Apply filters per province">Provinces</a>
+                            <a href="#c" v-on:click="setTarget('countries')" v-bind:class="{'active': opts.target == 'countries', 'tooltip-bottom': true}" data-tooltip="Apply filters per country">Countries</a>
+                        </div>
+                        <div>
+                            <a href="#" v-on:click="setOption('include_wasteland')" v-bind:class="{'active': opts.include_wasteland, 'tooltip-bottom': true}" data-tooltip="Include uncolonized/wasteland">+Wasteland</a>
+                        </div>
+                    </li>
+                </ul>
+                <div class="subfilterlist">
+                    <!-- depends on what filter we're on -->
+                    <div id="filter_religions" v-show="type == 'religion'">
+                        <p>Show all</p>
+                        <ul v-for="rgroup in religiongroups">
+                            <li><b>{{ rgroup }}</b></li>
+                            <li v-for="r in religions[rgroup]">
+                                <span v-on:click="setFilter('province_r', r[1])">{{ r[0] }}</span>
+                            </li>
+                        </ul>         
+                    </div>
+                    <div id="filter_tradegoods" v-show="type == 'provinces'">
+                        <ul>
+                            <li><b>Provinces</b></li>
+                            <li><span v-on:click="setFilter('tradegoods')">Trade Goods</span></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <template id="eumap">
+        <div id="svg">
+            <svg></svg>
+        </div>
+    </template>
+
+    <template id="detailspane">
+        <div id="details-container">
+            <div id="details" class="detail" v-show="show == 'province'">
+                <h2 v-show="selected">{{ sp.name }}<span>#{{ sp.id }}</span></h2>
+                <div v-bind:class="{'province': true, 'pure-g': true, 'hre': sp.hre, 'ocean': sp.ocean, 'wl': sp.wasteland}" v-show="!sp.nonp && !unselected">
+
+                <div class="pure-u-1-4">
+                    <div class="box"><img class="icon" src="assets/i/Tax_income.png" />{{ sp.tax }}</div>
+                </div>
+                <div class="pure-u-1-4">
+                    <div class="box"><img class="icon" src="assets/i/Production.png" />{{ sp.prod }}</div>
+                </div>
+                <div class="pure-u-1-4">
+                    <div class="box"><img class="icon" src="assets/i/Manpower.png" />{{ sp.man }}</div>
+                </div>
+                <div class="pure-u-1-4">
+                    <div class="box tooltip-left cap" v-on:click="filter('tradegood', sp.trade)" data-tooltip="Show provinces with this trade good">{{ sp.trade }}</div>
+                </div>
+
+                <div class="pure-u-1-2">
+                    <div class="box">
+                        <img v-bind:src="'assets/i/religion/' + sp.religion + '.png'" class="icon" /><a v-on:click="filter('province_r', sp.religion)" class="tooltip-left cap mid" data-tooltip="Provinces with this religion">{{ sp.religion }}</a>
+                    </div>
+                </div>
+                <div class="pure-u-1-2">
+                    <div class="box">
+                        <a href="#" v-on:click="filter('province_c', sp.culture)" class="tooltip-left cap mid" data-tooltip="Provinces with this culture">{{ sp.culture }}</a><span v-show="sp.culturegroup">/</span>{{ sp.culturegroup }}
+                    </div>
+                </div>
+                <div class="pure-u-1">
+                    <div class="cores box" v-show="!sp.nonp || sp.owned">
+                        Cores: <span v-for="core in sp.cores" :data-tooltip="countryname(core)" v-on:click="selection('country', core)"><img v-bind:src="'assets/i/flags/32/' + core + '.png'" class="flag32 down tooltip-left"/></span>
+                    </div>
+                </div>
+                <div class="pure-u-1">
+                    <div class="claims box" v-show="!sp.nonp || sp.owned">
+                        Claims: <span v-for="core in sp.claims" :data-tooltip="countryname(core)" v-on:click="selection('country', claim)"><img src="assets/i/flags/32/{{ core }}.png" class="flag32 down tooltip-left"/></span>
+                    </div>
+                </div>
+
+                </div>
+
+                <div class="country pure-g" v-show="!sp.nonp && sp.owned && !unselected">
+                    <h2 class="pure-u-1" style="margin-top:10px">{{ sCountry.name }}</h2>
+                    <div class="pure-g">
+
+                        <div class="pure-u-1-2">
+                            <div class="box" data-tooltip="Capital" v-if="sCountry._capital" v-on:click="actions.commit('province', sCountry._capital.id)">
+                                <img src="assets/i/Capital.png" class="down"/>{{ sCountry._capital.name }}
+                            </div>
+                        </div>
+                        
+                        <div class="pure-u-1-2">
+                            <div class="box" data-tooltip="Development"><img src="assets/i/Development.png" class="down" />{{ sCountry.totalDev }}</div>
+                        </div>
+    
+                        <div class="pure-u-1-2">
+                            <div class="box">
+                                <img v-bind:src="'assets/i/religion/' + sCountry.religion + '.png'" class="icon" /><a v-on:click="filter('country_r', sCountry.religion)" class="tooltip-left cap mid" data-tooltip="Countries with this religion">{{ sCountry.religion }}</a>
+                            </div>
+                        </div>
+                        <div class="pure-u-1-2">
+                            <div class="box">
+                                <a class="tooltip-left cap mid">{{ sCountry.culture }}</a>
+                            </div>
+                        </div>
+                        <!-- is subject --
+
+                        <div class="pure-u-1" [hidden]="!countryInfo.subject_data">
+                            <div class="box" *ngIf="countryInfo.subject_of != undefined">
+                                <span [hidden]="countryInfo.subject_of.subject_type != 'vassal'">Vassal of</span>
+                                <span [hidden]="countryInfo.subject_of.subject_type != 'personal_union'">Union under</span>
+                                <span [hidden]="countryInfo.subject_of.subject_type != 'march'">March of </span>
+                                <span [hidden]="countryInfo.subject_of.subject_type != 'tributary_state'">Tributary of </span>
+                                <span [hidden]="countryInfo.subject_of.subject_type != 'daimyo_vassal'">Daimyo of </span>
+                                <img class="down" [src]="flag(countryInfo.subject_of.first)" /><a v-on:click="selection('country', countryInfo.subject_of.first)">{{ countryname(countryInfo.subject_of.first) }}</a>
+                            </div>
+                        </div>
+                        <div class="pure-u-1" *ngIf="countryInfo.has_subjects">
+                            <div class="box">
+                                <p *ngFor="let subj  of subjects(countryInfo.subjects)" class="tooltip-left" [attr.data-tooltip]="subj[0][0]">
+                                    <img [src]="'assets/i/' + subj[0][1]" class="down" /><a v-on:click="selection('country', subj[2])">{{ subj[1] }}</a>
+                                </p>
+                            </div>
+                        </div>
+                        -->
+                    </div>
+                </div>
+            </div>
+
+            <div id="tradenode" class="detail" v-show="show == 'tradenode'">
+                <h2>{{ tnode.name }}</h2>
+            </div>
+
+            <div class="credits">
+                <p>Europa Universalis Map &middot; 2018 &middot; <a href="https://github.com/paimoe/eu4map">github</a></p>
+            </div>
+        </div>
+    </template>
+
+  <script src="/node_modules/vue/dist/vue.min.js"></script>
+  <script src="/node_modules/vuex/dist/vuex.min.js"></script>
+  <script src="/node_modules/d3/dist/d3.min.js"></script>
+  <script src="/node_modules/underscore/underscore-min.js"></script>
+
+  <script src="/js/map.js"></script>
+  <script src="/js/details.js"></script>
+  <script>
+    const store = new Vuex.Store({
+        state: {
+            selected: 0,
+            game: {
+                c: {}, p: {}, // countries, provinces
+                paths: {}, misc: {}, tradenodes: {},
+            },
+            loaded: false,
+            selected_p: 0,
+            selected_c: 0,
+            filters: {
+                'hre': false,
+                'releaseable': false,
+                'tradenodes': false,
+                'formable': false,
+
+                'target': '',
+                'include_wasteland': false,
+
+                'religions': '',
+                'religiongroups': ''
+            },
+            show: 'none', // which detail panel(s) to show
+        },
+        mutations: {
+            loaded (state) {
+                state.loaded = true;
+            },
+            filter (state, opts) {
+
+            },
+            selected_p(state, id) {
+                //console.log('selected something, ', id)
+                state.selected_p = id;
+                //state.filters.selected = id;
+            }
+        },
+        getters: {
+            paths: state => {
+                return state.game.p;
+            },
+            loaded: state => { return state.loaded },
+            filters: state => { return state.filters },
+            show: state => { return state.show },
+            province: state => (id) => { return state.game.p[id] },
+            provinces_of: state => (tag) => { return _.filter(state.game.p, (x) => x['owner'] == tag) },
+            country: state => (tag) => { return state.game.c[tag] },
+            selected_type: state => {
+                if (state.selected_p !== 0) {
+                    return 'province';
+                }
+                if (state.selected_c !== 0) { 
+                    return 'country';
+                }
+                // might also be showing trade nodes?
+                return 'none';
+            }
+        }
+    });
+
+    Vue.component('filters', {
+        template: '#filters',
+        data: function() {
+            return {
+                type: '',
+                rgroup: '',
+                r: '', opts: {}, religiongroups:[],religions:[]
+            }
+        },
+        methods: {
+            reset() {
+                // set t hings back to defaults somehow
+                this.type = this.rgroup = this.r = '';
+                this.opts = {};
+                this.religiongroups = this.religions = [];
+            },
+            filterType(what) {
+                console.log('wz', what)
+                if (this.type === what) {
+                    // reset
+                    this.reset();
+                } else {
+                    this.type = what;
+                }
+                //this.$state.commit('filter', { what: })
+            }
+        }
+    });
+
+    var app = new Vue({
+        el: '#container',
+        store,
+        data: {
+
+        },
+        computed: {
+
+        },
+        created() {
+            this.init();
+
+            // Calculate subjects/totals etc since it won't really change often
+        },
+        methods: {
+            init() {
+                console.log('init page, load data files');
+
+                // data
+                var self = this;
+
+                // Load
+                Promise.all(['countries.json', 'provdata.json', 'eu4map.json', '_all.json', 'tradenodes.json'].map(url => 
+                    fetch('/assets/' + url).then(resp => resp.json())
+                )).then(data => {
+                    console.log('DATA', data);
+
+                    self.$store.state.game.c = data[0];
+                    self.$store.state.game.p = data[1];
+                    self.$store.state.game.paths = data[2];
+                    self.$store.state.game.misc = data[3];
+                    self.$store.state.game.tradenodes = data[4];
+
+                    self.$store.commit('loaded');
+                })
+            },
+        }
+    })
+  </script>
+</body>
+</html>

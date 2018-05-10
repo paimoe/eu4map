@@ -1,0 +1,514 @@
+/* You can add global styles to this file, and also import other style files */
+.overlay {
+  fill: none;
+  pointer-events: all;
+}
+.pa {
+    pointer-events: all;
+}
+.pn {
+    pointer-events: none;
+}
+path.hover {
+    stroke: white;
+    stroke-width: 5px;
+    opacity:0.8;
+}
+
+a {
+  text-decoration:underline;
+  color:#000;
+  cursor:pointer;
+}
+
+/* Provinces */
+.pwaste {
+    fill: #414141 !important;
+}
+.psea {
+    fill: #28393c !important;
+}
+.pnobody {
+    fill: DimGray !important;
+}
+.plake {
+  fill: #575972 !important;
+    fill: #28393c !important;
+}
+.filtered {
+    fill: black !important;
+}
+.pinactive {
+    fill: gray !important;
+}
+
+
+img.flag32 {
+    width: 32px;
+    height:24px;
+}
+
+#part-filters {
+  min-height: 70px;
+}
+#part-map {
+  height: calc(100vh - 71px);
+}
+#part-details {
+  height: calc(100vh - 71px);
+}
+#svg {
+  height:100%;
+}
+
+/* filter list */
+.filterlist {
+    display:table;
+    padding-left:10px;
+}
+.filterlist li {
+    display:table-cell;
+    cursor: pointer;
+    padding:5px;
+}
+.filterlist li.u {
+    text-decoration:underline;
+}
+.filterlist li:hover {
+    text-decoration: none;
+}
+.filterlist li.i {
+    text-decoration:none;
+}
+
+.subfilterlist * ul {
+   display:table;
+    padding-left:10px;
+
+}
+.subfilterlist li {
+    display:table-cell;
+    cursor: pointer;
+    text-decoration:underline;
+    padding:5px;
+}
+.subfilterlist li b {
+    text-decoration:none !important;
+    cursor:default;
+}
+
+/* some special labels */
+.filterlist .label {
+    background: #414141;
+    color:#fff;
+    padding:3px;
+    margin-right:5px;
+    cursor: default;
+}
+.filterlist .reset {
+    background:#ce0e0e;
+    color:#fff;
+    padding:3px;
+    margin-right:5px;
+}
+
+.filterswitches {
+    display: table;
+}
+.filterswitches div {
+    display: table-cell;
+
+}
+
+.filterswitches div a {
+    display:table-cell;
+    border:1px solid #414141;
+    border-left-width: 0;
+    padding:5px;
+    /*font-variant: small-caps;
+    /*text-transform: uppercase;*/
+    font-size: 80%;
+    text-decoration: none;
+}
+.filterswitches div a:hover {
+    background: #414141;
+    color: #fff;
+}
+.filterswitches div a.active {
+    background: #3c8f17;
+    color: #fff;
+}
+.filterswitches div a:first-of-type {
+    border-radius: 5px 0 0 5px;
+    border-left-width: 1px;
+}
+.filterswitches div a:last-of-type {
+    border-radius: 0 5px 5px 0;
+}
+
+
+/* details */
+#details, .detail {
+    margin: 0 10px;
+    /*border: 1px solid #c3c3c3;*/
+    border-radius: 0 0 10px 10px;
+    padding: 10px;
+    background:white;
+}
+#details h2, .detail h2 {
+    margin-top:0;
+    text-align:center;
+}
+#details h2 span, .detail h2 span {
+    color: #eee;
+    font-size:80%;
+}
+
+#details .province, #details .country {
+    position:relative;
+}
+.showtype {
+    position:absolute;
+    top:10;
+    left:10;
+    color:DimGray;
+    font-size:50%;
+}
+
+#details .province {
+    
+}
+#details .province table {
+    width: 100%;
+}
+#details .province .development {
+    text-align:left;   
+    
+}
+#details .province .development td {
+    border: 1px solid black;
+}
+
+#details .country, #details .country .pure-g {
+    width:100%;
+}
+div.box {
+    padding:0 5px;
+    background:#eeedf6;;
+    border: 1px solid #938ecb;
+    border-radius: 5px;
+    padding-top:0;
+    margin:3px;
+    line-height:32px;
+}
+div.box a {
+    color: #000;
+}
+div.box p {
+    margin:0;
+}
+
+.development {
+    display:table;
+    border-spacing:5px;
+    width:100%;
+}
+.development div.r {
+    display:table-row;
+    justify-content:space-between;
+}
+.development div.x, div.xi, div.x2 {
+    display:table-cell;
+    width:25%;
+    padding:5px;
+    background:#d1cfe4;
+    border: 1px solid #584dc3;
+    border-radius: 5px;
+    padding-top:0;
+}
+.development div.x {
+    padding: 5px;
+}
+.development div.x2 {
+    width:100%;
+}
+
+/* fix for multicol table cell */
+div.block {
+    background:#d1cfe4;
+    border: 1px solid #584dc3;
+    border-radius: 5px;
+    padding-top:0;
+    margin: 0 5px;    
+}
+div.block p {
+    margin: 5px;
+}
+div.block * a {
+    color: #000;
+}
+
+img.flag32 {
+    width: 32px;
+    position:relative;
+    top:5px;
+    border: 1px solid #000;
+    border-radius:2px;
+    margin-right:5px;
+}
+.xi img, img.icon {
+    width:24px;
+    height:24px;
+    position:relative;
+    top:5px;
+    margin-right:5px;
+}
+
+img.down {
+    position:relative;
+    top:5px;
+    margin-right:5px;
+}
+
+.credits {
+    border-top: 1px solid #878383;
+    margin:10px;
+    text-align:center;
+    color: #b6b0b0;
+    font-size:90%;
+
+    text-shadow: 1px 1px 0 #000; 
+}
+.credits a {
+    color: #b6b0b0;
+}
+
+div.x .cap, .cap {
+    text-transform: capitalize;
+}
+div.x a {
+    color: #000;
+}
+div.x .mid {
+    text-align:center;
+}
+
+p.subjectdata {
+    border-bottom: 1px solid #878383;
+    text-align:center;
+    font-size:80%;
+}
+
+
+/* tooltips */
+/**
+ * Tooltip Styles
+ */
+
+/* Base styles for the element that has a tooltip */
+[data-tooltip],
+.tooltip {
+  position: relative;
+  cursor: pointer;
+}
+
+/* Base styles for the entire tooltip */
+[data-tooltip]:before,
+[data-tooltip]:after,
+.tooltip:before,
+.tooltip:after {
+  position: absolute;
+  visibility: hidden;
+  -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=0)";
+  filter: progid:DXImageTransform.Microsoft.Alpha(Opacity=0);
+  opacity: 0;
+  -webkit-transition: 
+      opacity 0.2s ease-in-out,
+        visibility 0.2s ease-in-out,
+        -webkit-transform 0.2s cubic-bezier(0.71, 1.7, 0.77, 1.24);
+    -moz-transition:    
+        opacity 0.2s ease-in-out,
+        visibility 0.2s ease-in-out,
+        -moz-transform 0.2s cubic-bezier(0.71, 1.7, 0.77, 1.24);
+    transition:         
+        opacity 0.2s ease-in-out,
+        visibility 0.2s ease-in-out,
+        transform 0.2s cubic-bezier(0.71, 1.7, 0.77, 1.24);
+  -webkit-transform: translate3d(0, 0, 0);
+  -moz-transform:    translate3d(0, 0, 0);
+  transform:         translate3d(0, 0, 0);
+  pointer-events: none;
+}
+
+/* Show the entire tooltip on hover and focus */
+[data-tooltip]:hover:before,
+[data-tooltip]:hover:after,
+[data-tooltip]:focus:before,
+[data-tooltip]:focus:after,
+.tooltip:hover:before,
+.tooltip:hover:after,
+.tooltip:focus:before,
+.tooltip:focus:after {
+  visibility: visible;
+  -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=100)";
+  filter: progid:DXImageTransform.Microsoft.Alpha(Opacity=100);
+  opacity: 1;
+}
+
+/* Base styles for the tooltip's directional arrow */
+.tooltip:before,
+[data-tooltip]:before {
+  z-index: 1001;
+  border: 6px solid transparent;
+  background: transparent;
+  content: "";
+}
+
+/* Base styles for the tooltip's content area */
+.tooltip:after,
+[data-tooltip]:after {
+  z-index: 1000;
+  padding: 8px;
+  width: 160px;
+  background-color: #000;
+  background-color: hsla(0, 0%, 20%, 0.9);
+  color: #fff;
+  content: attr(data-tooltip);
+  font-size: 14px;
+  line-height: 1.2;
+}
+
+/* Directions */
+
+/* Top (default) */
+[data-tooltip]:before,
+[data-tooltip]:after,
+.tooltip:before,
+.tooltip:after,
+.tooltip-top:before,
+.tooltip-top:after {
+  bottom: 100%;
+  left: 50%;
+}
+
+[data-tooltip]:before,
+.tooltip:before,
+.tooltip-top:before {
+  margin-left: -6px;
+  margin-bottom: -12px;
+  border-top-color: #000;
+  border-top-color: hsla(0, 0%, 20%, 0.9);
+}
+
+/* Horizontally align top/bottom tooltips */
+[data-tooltip]:after,
+.tooltip:after,
+.tooltip-top:after {
+  margin-left: -80px;
+}
+
+[data-tooltip]:hover:before,
+[data-tooltip]:hover:after,
+[data-tooltip]:focus:before,
+[data-tooltip]:focus:after,
+.tooltip:hover:before,
+.tooltip:hover:after,
+.tooltip:focus:before,
+.tooltip:focus:after,
+.tooltip-top:hover:before,
+.tooltip-top:hover:after,
+.tooltip-top:focus:before,
+.tooltip-top:focus:after {
+  -webkit-transform: translateY(-12px);
+  -moz-transform:    translateY(-12px);
+  transform:         translateY(-12px); 
+}
+
+/* Left */
+.tooltip-left:before,
+.tooltip-left:after {
+  right: 100%;
+  bottom: 50%;
+  left: auto;
+}
+
+.tooltip-left:before {
+  margin-left: 0;
+  margin-right: -12px;
+  margin-bottom: 0;
+  border-top-color: transparent;
+  border-left-color: #000;
+  border-left-color: hsla(0, 0%, 20%, 0.9);
+}
+
+.tooltip-left:hover:before,
+.tooltip-left:hover:after,
+.tooltip-left:focus:before,
+.tooltip-left:focus:after {
+  -webkit-transform: translateX(-12px);
+  -moz-transform:    translateX(-12px);
+  transform:         translateX(-12px); 
+}
+
+/* Bottom */
+.tooltip-bottom:before,
+.tooltip-bottom:after {
+  top: 100%;
+  bottom: auto;
+  left: 50%;
+}
+
+.tooltip-bottom:before {
+  margin-top: -12px;
+  margin-bottom: 0;
+  border-top-color: transparent;
+  border-bottom-color: #000;
+  border-bottom-color: hsla(0, 0%, 20%, 0.9);
+}
+
+.tooltip-bottom:hover:before,
+.tooltip-bottom:hover:after,
+.tooltip-bottom:focus:before,
+.tooltip-bottom:focus:after {
+  -webkit-transform: translateY(12px);
+  -moz-transform:    translateY(12px);
+  transform:         translateY(12px); 
+}
+
+/* Right */
+.tooltip-right:before,
+.tooltip-right:after {
+  bottom: 50%;
+  left: 100%;
+}
+
+.tooltip-right:before {
+  margin-bottom: 0;
+  margin-left: -12px;
+  border-top-color: transparent;
+  border-right-color: #000;
+  border-right-color: hsla(0, 0%, 20%, 0.9);
+}
+
+.tooltip-right:hover:before,
+.tooltip-right:hover:after,
+.tooltip-right:focus:before,
+.tooltip-right:focus:after {
+  -webkit-transform: translateX(12px);
+  -moz-transform:    translateX(12px);
+  transform:         translateX(12px); 
+}
+
+/* Move directional arrows down a bit for left/right tooltips */
+.tooltip-left:before,
+.tooltip-right:before {
+  top: 3px;
+}
+
+/* Vertically center tooltip content for left/right tooltips */
+.tooltip-left:after,
+.tooltip-right:after {
+  margin-left: 0;
+  margin-bottom: -16px;
+}
+
