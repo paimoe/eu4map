@@ -22,6 +22,13 @@ Vue.component('detailspane', {
             let c = this.$store.getters.country(tag);
             return c.name + ' (' + tag + ')';
         },
+
+        flag(tag) {
+            if (tag.length == 3) {
+                // return url
+                return `assets/i/flags/32/${tag}.png`;
+            }
+        },
         calculateTag: function(tag) {
             let p = this.$store.getters.provinces_of(tag);
             
@@ -35,8 +42,30 @@ Vue.component('detailspane', {
             // Do we need info on their subjects?
             this.sCountry['subject_data'] = !_.isEmpty(this.sCountry.subjects) || this.sCountry.subject_of !== null;
             this.sCountry['has_subjects'] = !_.isEmpty(this.sCountry['subjects']);
-
+            console.log('subj', this.sCountry);
             //console.log('subjdata', _.isEmpty(this.countryInfo.subjects), this.countryInfo.subject_of);  
+        },
+        subjects(subjlist) {
+            if (!_.isEmpty(this.sCountry) && this.sCountry['has_subjects']) {
+              let c = this.sCountry;
+              let subjs = [];
+              let imgs = {
+                'personal_union': ['Personal Union', 'Personal_union.png'],
+                'vassal': ['Vassal', 'Vassal.png'],
+                'tributary_state': ['Tributary', 'Tributary.png'],
+                'march': ['March', 'March.png'],
+                'daimyo_vassal': ['Daimyo', 'Vassal.png'],
+                // colony Colonial.png
+              };
+              //console.log(c, strs);
+              for (let s of c['subjects']) {
+                //let t = imgs[s['subject_type']];
+                let n = this.countryname(s['second']);
+                subjs.push([imgs[s['subject_type']], n, s['second']]);
+              }
+              return subjs;
+            } 
+            return ['no subjects'];
         }
     },
     computed: {

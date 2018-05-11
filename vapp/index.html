@@ -122,7 +122,7 @@
                     <div class="pure-g">
 
                         <div class="pure-u-1-2">
-                            <div class="box" data-tooltip="Capital" v-if="sCountry._capital" v-on:click="actions.commit('province', sCountry._capital.id)">
+                            <div class="box" data-tooltip="Capital" v-if="sCountry._capital" v-on:click="zoomTo(sCountry._capital.id)">
                                 <img src="assets/i/Capital.png" class="down"/>{{ sCountry._capital.name }}
                             </div>
                         </div>
@@ -141,26 +141,27 @@
                                 <a class="tooltip-left cap mid">{{ sCountry.culture }}</a>
                             </div>
                         </div>
-                        <!-- is subject --
+                        <!-- is subject -->
 
-                        <div class="pure-u-1" [hidden]="!countryInfo.subject_data">
-                            <div class="box" *ngIf="countryInfo.subject_of != undefined">
-                                <span [hidden]="countryInfo.subject_of.subject_type != 'vassal'">Vassal of</span>
-                                <span [hidden]="countryInfo.subject_of.subject_type != 'personal_union'">Union under</span>
-                                <span [hidden]="countryInfo.subject_of.subject_type != 'march'">March of </span>
-                                <span [hidden]="countryInfo.subject_of.subject_type != 'tributary_state'">Tributary of </span>
-                                <span [hidden]="countryInfo.subject_of.subject_type != 'daimyo_vassal'">Daimyo of </span>
-                                <img class="down" [src]="flag(countryInfo.subject_of.first)" /><a v-on:click="selection('country', countryInfo.subject_of.first)">{{ countryname(countryInfo.subject_of.first) }}</a>
+                        <div class="pure-u-1" v-show="sCountry.subject_data">
+                            <div class="box" v-if="sCountry.subject_of != undefined">
+                                <span v-show="sCountry.subject_of.subject_type == 'vassal'">Vassal of</span>
+                                <span v-show="sCountry.subject_of.subject_type == 'personal_union'">Union under</span>
+                                <span v-show="sCountry.subject_of.subject_type == 'march'">March of </span>
+                                <span v-show="sCountry.subject_of.subject_type == 'tributary_state'">Tributary of </span>
+                                <span v-show="sCountry.subject_of.subject_type == 'daimyo_vassal'">Daimyo of </span>
+                                <img class="down" v-bind:src="flag(sCountry.subject_of.first)" /><a v-on:click="selection('country', sCountry.subject_of.first)">{{ countryname(sCountry.subject_of.first) }}</a>
                             </div>
                         </div>
-                        <div class="pure-u-1" *ngIf="countryInfo.has_subjects">
+
+                        <div class="pure-u-1" v-show="sCountry.has_subjects">
                             <div class="box">
-                                <p *ngFor="let subj  of subjects(countryInfo.subjects)" class="tooltip-left" [attr.data-tooltip]="subj[0][0]">
-                                    <img [src]="'assets/i/' + subj[0][1]" class="down" /><a v-on:click="selection('country', subj[2])">{{ subj[1] }}</a>
+                                <p v-for="subj in subjects(sCountry.subjects)" class="tooltip-left" v-bind:data-tooltip="subj[0][0]">
+                                    <img v-bind:src="'assets/i/' + subj[0][1]" class="down" /><a v-on:click="selection('country', subj[2])">{{ subj[1] }}</a>
                                 </p>
                             </div>
                         </div>
-                        -->
+                        
                     </div>
                 </div>
             </div>
@@ -190,6 +191,7 @@
                 c: {}, p: {}, // countries, provinces
                 paths: {}, misc: {}, tradenodes: {},
             },
+            save: false,
             loaded: false,
             selected_p: 0,
             selected_c: 0,
@@ -282,9 +284,7 @@
 
         },
         created() {
-            this.init();
-
-            // Calculate subjects/totals etc since it won't really change often
+            this.init()
         },
         methods: {
             init() {
@@ -294,7 +294,7 @@
                 var self = this;
 
                 // Load
-                Promise.all(['countries.json', 'provdata.json', 'eu4map.json', '_all.json', 'tradenodes.json'].map(url => 
+                Promise.all(['countries.json', 'provdata.json', 'eu4map.json', '_all.json', 'tradenodes.json', '_day1.json'].map(url => 
                     fetch('/assets/' + url).then(resp => resp.json())
                 )).then(data => {
                     console.log('DATA', data);
@@ -304,9 +304,52 @@
                     self.$store.state.game.paths = data[2];
                     self.$store.state.game.misc = data[3];
                     self.$store.state.game.tradenodes = data[4];
+                    self.$store.state.save = data[5];
 
-                    self.$store.commit('loaded');
+                    self.applySave();
                 })
+            },
+
+            applySave() {
+                let game = this.$store.state.game;
+                //console.log('savedata', this.dataStore.save);
+                for (cid in game.c) {
+                  var c = game.c[cid];
+                  c['subject_of'] = null;
+                  c['subjects'] = [];
+                }
+
+                
+                //var deps = ['']
+                var self = this;
+                // compile provinces per country
+                _.each(game.p, (prov, idx) => {
+                  if (prov.hasOwnProperty('owner')) {
+                    var owner = prov['owner'];
+                    if (owner !== null) {
+                      // assign to country
+                      game.c[owner].provs = game.c[owner].provs || [];
+                      game.c[owner].provs.push(prov['id']);
+                    }
+                  }
+                });
+
+                _.each(this.$store.state.save.diplomacy, (kind, idx) => {
+                  console.log('kind', kind, idx);
+                  _.each(kind, (data, idx2) => {
+                    //this.dataStore.countries
+                    if (typeof idx === "string") {
+                      if (idx === 'dependency') {
+                        // Get both countries
+                        game.c[data.first].subjects = game.c[data.first].subjects || [];
+                        game.c[data.first].subjects.push(data);
+                        game.c[data.second].subject_of = data;
+                      }
+                    }
+                  });
+                });
+
+                this.$store.commit('loaded');
             },
         }
     })
