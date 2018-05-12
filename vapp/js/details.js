@@ -16,7 +16,8 @@ Vue.component('detailspane', {
             console.log('selected tag', type, tag);
         },
         filter: function(type, specific) {
-            console.log('apply map filter', type, specific);
+            //console.log('apply map filter', type, specific);
+            this.$store.commit('filter', {'which': type, 'opts': specific});
         },
         countryname: function(tag) {
             let c = this.$store.getters.country(tag);
@@ -42,7 +43,7 @@ Vue.component('detailspane', {
             // Do we need info on their subjects?
             this.sCountry['subject_data'] = !_.isEmpty(this.sCountry.subjects) || this.sCountry.subject_of !== null;
             this.sCountry['has_subjects'] = !_.isEmpty(this.sCountry['subjects']);
-            console.log('subj', this.sCountry);
+            //console.log('subj', this.sCountry);
             //console.log('subjdata', _.isEmpty(this.countryInfo.subjects), this.countryInfo.subject_of);  
         },
         subjects(subjlist) {
@@ -66,7 +67,11 @@ Vue.component('detailspane', {
               return subjs;
             } 
             return ['no subjects'];
-        }
+        },
+        showPane(which) {
+            //console.log('show', this.$store.getters.selected_type)
+            return _.contains(this.$store.getters.selected_type, which);
+        },
     },
     computed: {
         selected() {
@@ -93,7 +98,7 @@ Vue.component('detailspane', {
                 ret['sCountry'] = false;
             }
             this.sCountry = ret['sCountry'];
-            console.log(this.sCountry);
+            //console.log(this.sCountry);
 
             ret['nonp'] = prov.wasteland || prov.ocean || prov.sea || prov.lake;
             ret['owned'] = prov['owner'] !== null;
@@ -115,15 +120,23 @@ Vue.component('detailspane', {
 */
             return ret;
         },
-        sCountry() {
+        sCouantry() {
             // hrm
             return {
                 name: 'country2'
             }
         },
         show() {
-            console.log('show', this.$store.getters.selected_type)
+            //console.log('show', this.$store.getters.selected_type)
             return this.$store.getters.selected_type;
+        },
+        filterStr() {
+            return fSerialize(this.$store.state.filters);
+        },
+        // which achievement was selected
+        ach() {
+            let dets = this.$store.getters.achievement();
+            return dets;
         }
     }
 

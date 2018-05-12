@@ -1,6 +1,11 @@
 import json
 
 from parsers.base import DataParser_save
+from pprint import pprint
+
+CUSTOM = {
+    
+}
 
 class AchievementParser(DataParser_save):
     """
@@ -23,9 +28,22 @@ class AchievementParser(DataParser_save):
             achdata = f.read()
 
         data = self.oneline(achdata)
-        print(data)
+        #pprint(data)
+
+        # Specify ones we can filter
+        prepare = {}
+
+        for ach in data:
+            #pprint(ach)
+            name = ach.replace('achievement_', '')
+            dset = data[ach]
+            prepare[name] = dset
+
+            prepare[name]['keyname'] = name
+            prepare[name]['name'] = name.replace('_', ' ').title()
+            prepare[name]['needs_cores'] = 'owns_core_province' in dset['happened']
 
         # Parse formables
         #savedata = { x:d for x,d in self.data.items() }
         savedata = {}
-        self.save(data)
+        self.save(prepare)

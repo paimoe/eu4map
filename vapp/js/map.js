@@ -21,12 +21,19 @@ Vue.component('eumap', {
     isloaded (new1, old1) {
       //console.log('draw2 was updated?????');
       this.init(); // data files are loaded
+    },
+    redraw (new1, old1) {
+      console.log('calling map:redraw')
+      this.drawProvinces;
     }
   },
 
   computed: {
     isloaded() {
       return this.$store.getters.loaded;
+    },
+    redraw() {
+      return this.$store.getters.check_if_redraw;
     },
 
     drawProvinces() {
@@ -257,7 +264,8 @@ Vue.component('eumap', {
     },
 
   provinceStyle: function(node) {
-    // If country exists                    
+    // If country exists    
+    //console.log('provinceStyle', this.filter('tradenodes'))                
     let c = this.getCountry(node['owner']);
     var color = 'gray';
     if (c !== false) {
@@ -270,7 +278,7 @@ Vue.component('eumap', {
     // Check for filters
     if (this.filter('tradenodes')) {
       // Set color to the tradenode it's in
-      let tn = this.filter('tradenodes');
+      let tn = this.$store.state.game.tradenodes;
       for (let idx in tn) {
         var item = tn[idx];
         //console.log('item', item);
