@@ -119,7 +119,7 @@ class ProvinceParser(DataParser_save):
             is_dt = isinstance(k, datetime.datetime)
 
             # Get ones that match the container field names
-            if k in ('owner', 'controller', 'culture', 'religion', 'hre',):
+            if k in ('owner', 'controller', 'culture', 'hre',):
                 setattr(prov, k, v)
 
             if k == 'add_core':
@@ -143,6 +143,10 @@ class ProvinceParser(DataParser_save):
                         prov.man = v
             if k == 'trade_goods':
                 prov.trade = v
+            if k == 'religion':
+                if v in renames.RELIGIONS:
+                    v = renames.RELIGIONS[v]
+                prov.religion = v
 
             # Check through the history, apply any before our start date
             if is_dt:
@@ -152,7 +156,7 @@ class ProvinceParser(DataParser_save):
                     #print('Applying history ', v)
                     for act, val in v.items():
                         #print(act,val)
-                        if act in ('owner', 'controller', 'culture', 'religion', 'hre',):
+                        if act in ('owner', 'controller', 'culture', 'hre',):
                             setattr(prov, act, val)
 
                         if act == 'add_core':
@@ -165,6 +169,10 @@ class ProvinceParser(DataParser_save):
                             prov.hre = val
                         if act == 'trade_goods':
                             prov.trade = val
+                        if act == 'religion':
+                            if val in renames.RELIGIONS:
+                                val = renames.RELIGIONS[val]
+                            prov.religion = val
 
         # sort history by datetime key
         #prov.history.sort(key=dict.keys)

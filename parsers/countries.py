@@ -87,6 +87,9 @@ class CountryParser(DataParser_save):
                         if name in renames.NAMES:
                             c.internal_name = renames.NAMES[name] # hmmm
 
+                        if c.religion in renames.RELIGIONS:
+                            c.religion = renames.RELIGIONS[c.religion]
+
                         self.allcountries[tag] = c
 
         # Get national ideas

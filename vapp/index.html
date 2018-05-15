@@ -32,6 +32,7 @@
                     <li class="label">FILTERS</li>
                     <li class="reset" v-on:click="reset()">RESET</li>
                     <li v-on:click="filterType('provinces')" class="u">Province Data</li>
+                    <li v-on:click="filterType('country')" class="u">Country</li>
                     <li v-on:click="filterType('religion')" class="u">Religions</li>
                     <li v-on:click="setFilter('hre')" class="u">HRE</li>
                     <li v-on:click="setFilter('tradenodes')" class="u">Trade</li>
@@ -51,6 +52,36 @@
                 </ul>
                 <div class="subfilterlist">
                     <!-- depends on what filter we're on -->
+                    <div id="filter_tradegoods" v-show="type == 'provinces'">
+                        <ul>
+                            <li><b>Provinces</b></li>
+                            <li><span v-on:click="setFilter('tradegoods')">Trade Goods</span></li>
+                        </ul>
+                    </div>
+                    <div id="filter_tradegoods" v-show="type == 'country'">
+                        <ul>
+                            <li><b style="color:#fff;background:#000">Government Types</b></li>
+                        </ul>
+                        <ul>
+                            <li><b>Monarchies</b></li>
+                            <li v-for="g in gov_types('monarchy')" v-on:click="setFilter('c_gov', g[0])">{{ g[1] }}</li>
+                        </ul>
+                        <ul>
+                            <li><b>Republic</b></li>
+                            <li v-for="g in gov_types('republic')" v-on:click="setFilter('c_gov', g[0])">{{ g[1] }}</li>
+                        </ul>
+                        <ul class="squeeze">
+                            <li><b>Misc</b></li>
+                            <li v-for="g in gov_types('rest')" v-on:click="setFilter('c_gov', g[0])">{{ g[1] }}</li>
+                        </ul>
+                        <ul>
+                            <li><b style="color:#fff;background:#000">Other</b></li>
+                        </ul>
+                        <ul>
+                            <li><b>Misc</b></li>
+                            <li><span v-on:click="setFilter('has_custom_missions')">Has Custom Missions</span></li>
+                        </ul>
+                    </div>
                     <div id="filter_religions" v-show="type == 'religion'">
                         <p>Show all</p>
                         <ul v-for="(item, key, index) in religions">
@@ -59,12 +90,6 @@
                                 <span v-on:click="setFilter('province_r', r[1])">{{ r[0] }}</span>
                             </li>
                         </ul>         
-                    </div>
-                    <div id="filter_tradegoods" v-show="type == 'provinces'">
-                        <ul>
-                            <li><b>Provinces</b></li>
-                            <li><span v-on:click="setFilter('tradegoods')">Trade Goods</span></li>
-                        </ul>
                     </div>
                     <div id="filter_achievements" v-show="type == 'achievements'">
                         <ul>
@@ -209,6 +234,15 @@
   <script>
     let fSerialize = (filters) => btoa(JSON.stringify(filters));
     let fUnserialize = (s) => atob(JSON.parse(s));
+    String.prototype.title = function(sp) {
+        sp = sp || '_';
+        return this.split(sp)
+                .map(w => w[0].toUpperCase() + w.substr(1).toLowerCase())
+                .join(' ');
+    };
+    String.prototype.endsWith = function(suffix) {
+        return this.indexOf(suffix, this.length - suffix.length) !== -1;
+    };
     const store = new Vuex.Store({
         state: {
             selected: 0,
@@ -222,7 +256,7 @@
             selected_p: 0,
             selected_c: 0,
             _bools: ['hre', 'releaseable', 'tradenodes', 'formable', 'include_wasteland'],
-            _strs: ['target', 'religions', 'religiongroups', 'achievement', 'province_r', 'country_r'],
+            _strs: ['target', 'religions', 'religiongroups', 'achievement', 'province_r', 'country_r', 'c_gov'],
             _filters: {
                 'hre': false,
                 'releaseable': false,
@@ -238,6 +272,8 @@
 
                 'province_r': '',
                 'country_r': '',
+
+                'c_gov': '',
             },
             filters: undefined,
             show: 'none', // which detail panel(s) to show
@@ -263,7 +299,7 @@
                 state.filters.country_r = '';
             },
             filter (state, opts) {
-                console.log('applying filter', opts);
+                //console.log('applying filter', opts);
                 if (_.contains(state._bools, opts.which)) {
                     // Toggle
                     state.filters[opts.which] = !state.filters[opts.which];                
@@ -271,7 +307,7 @@
                     if (opts.which in state.filters) {
                         // set filter
                         state.filters[opts.which] = opts.opts;
-                        console.log('setting filters state.filters[' + opts.which + '] = ', opts.opts)
+                        console.log('setting filters state.filters[' + opts.which + '] =', opts.opts)
                     } else {
                         // unknown key
                         console.log('unknown filter: ', opts.which);
@@ -325,6 +361,24 @@
             },
             misc: state => (key) => {
                 return state.game.misc[key];
+            },
+
+            gov_types: state => (type) => {
+                let govs = _.uniq(_.pluck(state.game.c, 'gov'))
+                            .filter(x => !!x); // filter out any null's
+                            //.map(x => ( { [x] : x.title() } )); // es6 only
+
+                // format?
+                let specific = false;
+                let grouped = ['monarchy', 'republic'];
+                if (_.contains(grouped, type)) {
+                    // Now map it
+                    specific = govs.filter(x => x.endsWith(type)).map(x => [x, x.title()]);
+                }
+                if (type == 'rest') {
+                    specific = govs.filter(x => !x.endsWith(grouped[0]) && !x.endsWith(grouped[1])).map(x => [x, x.title()]);
+                }
+                return specific ? specific : govs;
             }
 
             // serialized filters
@@ -371,6 +425,14 @@
                 // reset other filters first
                 this.$store.commit('reset');
                 this.setFilter('achievement', this.subfilter.achievement);
+            },
+            setTarget(which) {
+                // select by 'province' or 'country'
+            },
+            setOption(which) {
+                console.log('setOption', which);
+                // should be bool really
+                this.$store.commit('filter', {'which': which});
             }
         },
         computed: {
@@ -379,11 +441,13 @@
                 return _.sortBy(a, 'name');
             },
             religions() {
-                console.log('rellys')
                 return this.$store.getters.misc('religions');
             },
             cultures() {
                 return this.$store.getters.misc('cultures');
+            },
+            gov_types() {
+                return this.$store.getters.gov_types;
             }
         }
     });

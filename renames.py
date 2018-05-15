@@ -51,3 +51,9 @@ MAP = {
 NAMES = {
     'Swahili': 'Kilwa',
 }
+
+RELIGIONS = {
+    'tengri_pagan_reformed': 'tengri',
+    'animism': 'animist',
+    'buddhism': 'theravada',
+}

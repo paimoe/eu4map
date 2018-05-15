@@ -92,6 +92,9 @@ img.flag32 {
     text-decoration:underline;
     padding:5px;
 }
+.subfilterlist ul.squeeze li {
+  float:left;
+}
 .subfilterlist li b {
     text-decoration:none !important;
     cursor:default;
