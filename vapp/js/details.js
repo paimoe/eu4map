@@ -137,6 +137,33 @@ Vue.component('detailspane', {
         ach() {
             let dets = this.$store.getters.achievement();
             return dets;
+        },
+        tradenodedata() {
+            let nodes = this.$store.getters.tradenodes;
+            let ret = [];
+            //console.log('nodz',nodes['zanzibar'])
+            _.each(nodes, (item, idx) => {
+                let p = {
+                    'name': idx.title(),
+                    'color': 'rgb(' + item.color.join(',') + ')',
+                    'inland': item.inland === true,
+                };
+
+                /*
+                if ('incoming' in item) {
+                    p['in'] = _.pluck(item.incoming, 'name').map(x => x.title());
+                }*/
+                if ('outgoing' in item) {
+                    if (Array.isArray(item.outgoing)) {
+                        p['out'] = _.pluck(item.outgoing, 'name').map(x => x.title());
+                    } else {
+                        p['out'] = [item.outgoing['name'].title()];
+                    }
+                }
+
+                ret.push(p);
+            })
+            return _.sortBy(ret, x => x.name);
         }
     }
 

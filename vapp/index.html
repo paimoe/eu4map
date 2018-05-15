@@ -214,8 +214,12 @@
                 </div>
             </div>
 
-            <div id="tradenode" class="detail" v-show="showPane('tradenode')">
-                <h2>{{ tnode.name }}</h2>
+            <div id="tradenode" class="detail" v-show="showPane('tradenodes')">
+                <h2>Trade Nodes</h2>
+                <div class="tradenodeitem" v-for="node in tradenodedata">
+                    <h4><span class="nodecolor" v-bind:style="'background:' + node.color">&nbsp;</span>{{ node.name }} <small v-if="node.inland">inland</small></h4>
+                    <p style="margin-left:10px" v-if="node.out">&rarr; {{ node.out.join(', ') }}</p>
+                </div>
             </div>
 
             <div class="credits">
@@ -296,7 +300,7 @@
                 // Update entire _filters object
                 // find nicer way to do this, since this sucks. careful of caveats https://vuejs.org/v2/guide/reactivity.html#Change-Detection-Caveats
                 state.filters.hre = state.filters.releaseable = state.filters.tradenodes = state.filters.formable = state.filters.include_wasteland = false;
-                state.filters.target = state.filters.religions = state.filters.religiongroups = state.filters.achievement = state.filters.province_r = '';
+                state.filters.religions = state.filters.religiongroups = state.filters.achievement = state.filters.province_r = '';
                 state.filters.country_r = state.filters.c_gov = state.filters.religions_all = '';
             },
             filter (state, opts) {
@@ -316,6 +320,9 @@
                         console.log('unknown filter: ', opts.which);
                     }
                 }                
+            },
+            setTarget(state, target) {
+                state.filters.target = target;
             },
             selected_p(state, id) {
                 //console.log('selected something, ', id)
@@ -353,6 +360,9 @@
                 if (state.selected_c !== 0) { 
                     types.push('country');
                 }
+                if (state.filters.tradenodes == true) {
+                    types.push('tradenodes');
+                }
                 // might also be showing trade nodes?
 
                 return types;
@@ -360,6 +370,7 @@
             achievements: state => (needs_cores) => {
                 return _.filter(state.achievements, (x) => needs_cores ? x.needs_cores === true : true);
             },
+            tradenodes: state => state.game.tradenodes,
             achievement: state => (name) => {
                 if (name) {
                     return state.achievements[name];
@@ -437,10 +448,10 @@
             },
             setTarget(which) {
                 // select by 'province' or 'country'
-                this.$store.commit('filter', {'which': 'target', 'opts': which});
+                this.$store.commit('setTarget', which);
             },
             setOption(which) {
-                console.log('setOption', which);
+                //console.log('setOption', which);
                 // should be bool really
                 this.$store.commit('filter', {'which': which});
             },
@@ -486,7 +497,7 @@
                 // create filters from base
                 // also create '_filters' from _bools and _strs?
                 this.$store.state.filters = Object.assign({}, this.$store.state._filters);
-                this.$store.commit('filter', {'which': 'target', 'opts': 'provinces'}); // default to provinces selected
+                this.$store.commit('setTarget', 'provinces'); // default to provinces selected
 
                 // data
                 var self = this;

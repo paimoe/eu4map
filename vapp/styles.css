@@ -48,14 +48,21 @@ img.flag32 {
     height:24px;
 }
 
+#container {
+  height:100%;
+  width:100%;
+  overflow:hidden;
+}
+
 #part-filters {
   min-height: 70px;
 }
 #part-map {
-  height: calc(100vh - 71px);
+  height: calc(100vh - 70px);
 }
 #part-details {
-  height: calc(100vh - 71px);
+  height: calc(100vh - 70px);
+  overflow-y: scroll;
 }
 #svg {
   height:100%;
@@ -302,6 +309,20 @@ p.subjectdata {
     font-size:80%;
 }
 
+/* trade nodes */
+span.nodecolor {
+  width: 15px;
+  height:15px;
+  float:left;
+  margin-right:5px;
+}
+h4 small {
+  color: #ccc;
+  font-size:80%;
+}
+.tradenodeitem:hover h4 {
+  color:#fff;background:#000;
+}
 
 /* tooltips */
 /**
