@@ -24,7 +24,7 @@ Vue.component('eumap', {
     },
     redraw (new1, old1) {
       console.log('calling map:redraw')
-      this.drawProvinces;
+      this.drawProvinces();
     }
   },
 
@@ -36,7 +36,20 @@ Vue.component('eumap', {
       return this.$store.getters.check_if_redraw;
     },
 
-    drawProvinces() {
+    
+  },
+
+  methods: {/*
+    init2: function(){
+      console.log('init2 called')
+
+      //then draw
+      this.draw2;
+    },*/
+    filter: function(which) {
+      return this.$store.getters.filters(which);
+    },
+    drawProvinces: function() {
       console.log('drawing provinces');
 
       if (this.inited === false) {
@@ -114,18 +127,6 @@ Vue.component('eumap', {
 
       // Draw seperate trade arrows/routes
       return pathsdata;
-    }
-  },
-
-  methods: {/*
-    init2: function(){
-      console.log('init2 called')
-
-      //then draw
-      this.draw2;
-    },*/
-    filter: function(which) {
-      return this.$store.getters.filters[which];
     },
     init: function() {
       console.log('map: setup');
@@ -186,7 +187,7 @@ Vue.component('eumap', {
 
       this.inited = true;
 
-      this.drawProvinces; // try to remove the need for this and just run on update?
+      this.drawProvinces(); // try to remove the need for this and just run on update?
     },
 
     provinceClass: function(node) {

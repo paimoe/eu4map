@@ -42,11 +42,11 @@
                     <!-- pull this right -->
                     <li class="filterswitches">
                         <div>
-                            <a href="#p" v-on:click="setTarget('provinces')" v-bind:class="{'active': opts.target == 'provinces', 'tooltip-bottom': true}" data-tooltip="Apply filters per province">Provinces</a>
-                            <a href="#c" v-on:click="setTarget('countries')" v-bind:class="{'active': opts.target == 'countries', 'tooltip-bottom': true}" data-tooltip="Apply filters per country">Countries</a>
+                            <a href="#p" v-on:click="setTarget('provinces')" v-bind:class="{'active': check_filter('target') == 'provinces', 'tooltip-bottom': true}" data-tooltip="Apply filters per province">Provinces</a>
+                            <a href="#c" v-on:click="setTarget('countries')" v-bind:class="{'active': check_filter('target') == 'countries', 'tooltip-bottom': true}" data-tooltip="Apply filters per country">Countries</a>
                         </div>
-                        <div>
-                            <a href="#" v-on:click="setOption('include_wasteland')" v-bind:class="{'active': opts.include_wasteland, 'tooltip-bottom': true}" data-tooltip="Include uncolonized/wasteland">+Wasteland</a>
+                        <div style="display:none">
+                            <a href="#" v-on:click="setOption('include_wasteland')" v-bind:class="{'active': check_filter('include_wasteland'), 'tooltip-bottom': true}" data-tooltip="Include uncolonized/wasteland">+Wasteland</a>
                         </div>
                     </li>
                 </ul>
@@ -83,7 +83,7 @@
                         </ul>
                     </div>
                     <div id="filter_religions" v-show="type == 'religion'">
-                        <p>Show all</p>
+                        <ul><li v-on:click="setFilter('religions_all')">Show All</li></ul>
                         <ul v-for="(item, key, index) in religions">
                             <li><b>{{ key }}</b></li>
                             <li v-for="r in item">
@@ -255,13 +255,14 @@
             loaded: false,
             selected_p: 0,
             selected_c: 0,
-            _bools: ['hre', 'releaseable', 'tradenodes', 'formable', 'include_wasteland'],
+            _bools: ['hre', 'releaseable', 'tradenodes', 'formable', 'include_wasteland', 'religions_all'],
             _strs: ['target', 'religions', 'religiongroups', 'achievement', 'province_r', 'country_r', 'c_gov'],
             _filters: {
                 'hre': false,
                 'releaseable': false,
                 'tradenodes': false,
                 'formable': false,
+                'religions_all': false, // use country/province toggle
 
                 'target': '',
                 'include_wasteland': false,
@@ -273,7 +274,7 @@
                 'province_r': '',
                 'country_r': '',
 
-                'c_gov': '',
+                'c_gov': ''
             },
             filters: undefined,
             show: 'none', // which detail panel(s) to show
@@ -296,16 +297,18 @@
                 // find nicer way to do this, since this sucks. careful of caveats https://vuejs.org/v2/guide/reactivity.html#Change-Detection-Caveats
                 state.filters.hre = state.filters.releaseable = state.filters.tradenodes = state.filters.formable = state.filters.include_wasteland = false;
                 state.filters.target = state.filters.religions = state.filters.religiongroups = state.filters.achievement = state.filters.province_r = '';
-                state.filters.country_r = '';
+                state.filters.country_r = state.filters.c_gov = state.filters.religions_all = '';
             },
             filter (state, opts) {
                 //console.log('applying filter', opts);
                 if (_.contains(state._bools, opts.which)) {
                     // Toggle
+                    this.dispatch('reset');
                     state.filters[opts.which] = !state.filters[opts.which];                
                 } else {
                     if (opts.which in state.filters) {
                         // set filter
+                        this.dispatch('reset');
                         state.filters[opts.which] = opts.opts;
                         console.log('setting filters state.filters[' + opts.which + '] =', opts.opts)
                     } else {
@@ -321,13 +324,20 @@
         },
         getters: {
             check_if_redraw: state => {
+                //console.log('checking if redraw')
                 return fSerialize(state.filters); // if any filters changed, this b64 encode will also change
             },
             paths: state => {
                 return state.game.p;
             },
             loaded: state => { return state.loaded },
-            filters: state => { return state.filters },
+            filters: state => (which) => { 
+                if (which) {
+                    return state.filters[which];
+                } else {
+                    return state.filters;
+                }
+            },
             show: state => { return state.show },
             province: state => (id) => { return state.game.p[id] },
             provinces_of: state => (tag) => { return _.filter(state.game.p, (x) => x['owner'] == tag) },
@@ -366,7 +376,6 @@
             gov_types: state => (type) => {
                 let govs = _.uniq(_.pluck(state.game.c, 'gov'))
                             .filter(x => !!x); // filter out any null's
-                            //.map(x => ( { [x] : x.title() } )); // es6 only
 
                 // format?
                 let specific = false;
@@ -428,11 +437,15 @@
             },
             setTarget(which) {
                 // select by 'province' or 'country'
+                this.$store.commit('filter', {'which': 'target', 'opts': which});
             },
             setOption(which) {
                 console.log('setOption', which);
                 // should be bool really
                 this.$store.commit('filter', {'which': which});
+            },
+            check_filter(which) {
+                return this.$store.getters.filters(which);
             }
         },
         computed: {
@@ -448,7 +461,10 @@
             },
             gov_types() {
                 return this.$store.getters.gov_types;
-            }
+            },
+            filterStr() {
+                return this.$store.getters.filters();
+            },
         }
     });
 
@@ -468,7 +484,9 @@
                 console.log('init page, load data files');
 
                 // create filters from base
+                // also create '_filters' from _bools and _strs?
                 this.$store.state.filters = Object.assign({}, this.$store.state._filters);
+                this.$store.commit('filter', {'which': 'target', 'opts': 'provinces'}); // default to provinces selected
 
                 // data
                 var self = this;
