@@ -18,6 +18,9 @@ Vue.component('detailspane', {
             let cap = this.$store.getters.country(tag);
             this.$store.commit('selected_p', cap.capital);
         },
+        setTarget: function(which) {
+            this.$store.commit('setTarget', which);
+        },
         filter: function(type, specific) {
             //console.log('apply map filter', type, specific);
             this.$store.commit('filter', {'which': type, 'opts': specific});

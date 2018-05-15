@@ -144,12 +144,12 @@
 
                 <div class="pure-u-1-2">
                     <div class="box">
-                        <img v-bind:src="'assets/i/religion/' + sp.religion + '.png'" class="icon" /><a v-on:click="filter('province_r', sp.religion)" class="tooltip-left cap mid" data-tooltip="Provinces with this religion">{{ sp.religion }}</a>
+                        <img v-bind:src="'assets/i/religion/' + sp.religion + '.png'" class="icon" /><a v-on:click="setTarget('provinces');filter('religion', sp.religion)" class="tooltip-left cap mid" data-tooltip="Provinces with this religion">{{ sp.religion }}</a>
                     </div>
                 </div>
                 <div class="pure-u-1-2">
                     <div class="box">
-                        <a href="#" v-on:click="filter('province_c', sp.culture)" class="tooltip-left cap mid" data-tooltip="Provinces with this culture">{{ sp.culture }}</a><span v-show="sp.culturegroup">/</span>{{ sp.culturegroup }}
+                        <a href="#" v-on:click="setTarget('provinces');filter('culture', sp.culture)" class="tooltip-left cap mid" data-tooltip="Provinces with this culture">{{ sp.culture }}</a><span v-show="sp.culturegroup">/</span>{{ sp.culturegroup }}
                     </div>
                 </div>
                 <div class="pure-u-1">
@@ -181,12 +181,12 @@
     
                         <div class="pure-u-1-2">
                             <div class="box">
-                                <img v-bind:src="'assets/i/religion/' + sCountry.religion + '.png'" class="icon" /><a v-on:click="filter('country_r', sCountry.religion)" class="tooltip-left cap mid" data-tooltip="Countries with this religion">{{ sCountry.religion }}</a>
+                                <img v-bind:src="'assets/i/religion/' + sCountry.religion + '.png'" class="icon" /><a v-on:click="setTarget('countries');filter('religion', sCountry.religion)" class="tooltip-left cap mid" data-tooltip="Countries with this religion">{{ sCountry.religion }}</a>
                             </div>
                         </div>
                         <div class="pure-u-1-2">
                             <div class="box">
-                                <a class="tooltip-left cap mid">{{ sCountry.culture }}</a>
+                                <a class="tooltip-left cap mid"><a v-on:click="setTarget('countries');filter('culture', sCountry.culture)" class="tooltip-left cap mid" data-tooltip="Countries with this culture">{{ sCountry.culture }}</a></a>
                             </div>
                         </div>
                         <!-- is subject -->
@@ -260,13 +260,13 @@
             selected_p: 0,
             selected_c: 0,
             _bools: ['hre', 'releaseable', 'tradenodes', 'formable', 'include_wasteland', 'religions_all'],
-            _strs: ['target', 'religions', 'religiongroups', 'achievement', 'province_r', 'country_r', 'c_gov'],
+            _strs: ['target', 'religions', 'religiongroups', 'achievement', 'religion', 'religiongroup', 'culture', 'c_gov'],
             _filters: {
                 'hre': false,
                 'releaseable': false,
                 'tradenodes': false,
                 'formable': false,
-                'religions_all': false, // use country/province toggle
+                'religions_all': false, // not a specific one, show all religions on the map coloured to them
 
                 'target': '',
                 'include_wasteland': false,
@@ -278,8 +278,7 @@
                 // probably now need to combine these since we have target working
                 'religion': '',
                 'religiongroup': '',
-                'province_r': '',
-                'country_r': '',
+                'culture': '',
 
                 'c_gov': ''
             },
@@ -303,8 +302,8 @@
                 // Update entire _filters object
                 // find nicer way to do this, since this sucks. careful of caveats https://vuejs.org/v2/guide/reactivity.html#Change-Detection-Caveats
                 state.filters.hre = state.filters.releaseable = state.filters.tradenodes = state.filters.formable = state.filters.include_wasteland = false;
-                state.filters.religions = state.filters.religiongroups = state.filters.achievement = state.filters.province_r = '';
-                state.filters.country_r = state.filters.c_gov = state.filters.religions_all = '';
+                state.filters.religions = state.filters.religiongroups = state.filters.achievement = state.filters.religion = state.filters.religiongroup = '';
+                state.filters.culture = state.filters.c_gov = state.filters.religions_all = '';
             },
             filter (state, opts) {
                 //console.log('applying filter', opts);

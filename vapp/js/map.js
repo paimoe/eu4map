@@ -246,20 +246,17 @@ Vue.component('eumap', {
         }
         var inactive = this.ifInactive(node, compare, this.filter('religion'));          
       }
-
-
-      // if this province is in a country that passes the filter
-      if (this.filter('country_r')) {
-        if (country !== null) {
-          let field = country['religion'];
-          var inactive = this.ifInactive(node, field, this.filter('country_r'));
+      if (this.filter('culture')) {
+        let compare = null;
+        if (this.target == 'countries') {
+          if (country !== null) {
+            compare = country.culture;
+          }
+        } else {
+          // compare the province
+          compare = node.culture;
         }
-      }
-      if (this.filter('country_c')) {
-        /*if (country !== null) {
-          let field = country['culture'];
-          var inactive = this.ifInactive(node, field, this._filters.country_r);
-        }*/
+        var inactive = this.ifInactive(node, compare, this.filter('culture'));          
       }
       if (this.filter('tradegood')) {
         if (is_prov) {
