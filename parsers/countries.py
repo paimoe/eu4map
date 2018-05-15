@@ -19,17 +19,19 @@ class CountryParser(DataParser_save):
     def container():
         # Set up container
         fields = ('tag', 'name','capital', 'gov', 'govrank', 'ideas', 'color', 'culture', 'religion', 'techgroup', 'history', 'ideastype',
-            'internal_name')
+            'internal_name', 'provs', 'cores')
         nlistfields = []
         # Set types of specifics
         for n in fields:
             # pick default
-            if n in ('history',):
+            if n in ('history', 'provs', 'cores'):
                 t = []
             elif n in ('capital',):
                 t = 0
             elif n in ('ideas',):
                 t = {}
+            elif n in ('owns_land',):
+                t = False
             else:
                 t = None
             nlistfields.append((n, t)) # Set up defaults for namedlist
