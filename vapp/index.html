@@ -87,7 +87,7 @@
                         <ul v-for="(item, key, index) in religions">
                             <li><b>{{ key }}</b></li>
                             <li v-bind:class="{'active': active_religion(r[1])}" v-for="r in item">
-                                <span v-on:click="setFilter('province_r', r[1])">{{ r[0] }}</span>
+                                <span v-on:click="setFilter('religion', r[1])">{{ r[0] }}</span>
                             </li>
                         </ul>         
                     </div>
@@ -275,6 +275,9 @@
                 'religiongroups': '',
                 'achievement': '',
 
+                // probably now need to combine these since we have target working
+                'religion': '',
+                'religiongroup': '',
                 'province_r': '',
                 'country_r': '',
 
@@ -346,6 +349,7 @@
                 }
             },
             show: state => state.show,
+            target: state => state.filters.target,
 
             // access countries/provinces
             province: state => (id) => state.game.p[id],
@@ -463,9 +467,8 @@
                 return this.$store.getters.filters(which);
             },
             active_religion(compare) {
-                let r = this.$store.getters.filters('province_r');
-                let c = this.$store.getters.filters('country_r');
-                return r == '' ? c == compare : r == compare;
+                let r = this.$store.getters.filters('religion');
+                return r == compare;
             }
         },
         computed: {

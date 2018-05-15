@@ -6,6 +6,7 @@ Vue.component('eumap', {
     return {
       inited: false,
       game: {},
+      target: 'province',
     }
   },
   mounted: function() {
@@ -24,6 +25,10 @@ Vue.component('eumap', {
     },
     redraw (new1, old1) {
       console.log('map:redraw')
+
+      // Check target
+      this.target = this.$store.getters.target;
+
       this.drawProvinces();
     }
   },
@@ -191,17 +196,19 @@ Vue.component('eumap', {
 
     provinceClass: function(node) {
 
+      // Update a something somewhere so we can make a loading thing, since this is called for each province each time filters are updated
+
       let classes = ['pn'];
       var inactive = false;
-      var prov = this.game.p[node.id];
+      var prov = this.$store.getters.province(node.id);
       var is_prov = prov !== undefined;
       
       // Who owns it?
       var country = null;
       if (node.owner !== null) {
-        let c = this.game.c[node.owner]; 
+        let c = this.$store.getters.country(node.owner); 
         if (c !== undefined) {
-          var country = this.game.c[node.owner];
+          var country = c;
         }
       }
       //console.log('country', country);
@@ -225,12 +232,22 @@ Vue.component('eumap', {
       if (this.filter('hre') === true) {
         var inactive = this.ifInactive(node, node.hre, true);
       }
-      if (this.filter('province_r')) {
-        var inactive = this.ifInactive(node, node.religion, this.filter('province_r'));
+
+      // now allows for both province and country. some provs obviously don't belong to a country
+      if (this.filter('religion')) {
+        let compare = null;
+        if (this.target == 'countries') {
+          if (country !== null) {
+            compare = country.religion;
+          }
+        } else {
+          // compare the province
+          compare = node.religion;
+        }
+        var inactive = this.ifInactive(node, compare, this.filter('religion'));          
       }
-      if (this.filter('province_c')) {
-        var inactive = this.ifInactive(node, node.culture, this.filter('province_c'));
-      }
+
+
       // if this province is in a country that passes the filter
       if (this.filter('country_r')) {
         if (country !== null) {
