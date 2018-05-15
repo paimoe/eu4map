@@ -4,6 +4,7 @@ from timeit import default_timer as timer
 from decimal import Decimal
 
 import yaml
+from unidecode import unidecode
 
 from parsers.parsefile import ParseFile
 
@@ -13,7 +14,7 @@ from parsers.parsefile import ParseFile
 #signal(SIGPIPE, SIG_DFL) 
 
 EU4_PATH = 'B:\SteamLibrary\steamapps\common\Europa Universalis IV'
-EU4_PATH = '/media/paimoe/New Volume/BigSteamLibrary/steamapps/common/Europa Universalis IV'
+EU4_PATH = '/home/paimoe/.steam/steam/steamapps/common/Europa Universalis IV'
 
 class Checksum(object):
 
@@ -304,10 +305,14 @@ class DataParser_save(object):
             ldir = os.path.join(EU4_PATH, 'localisation')
 
             fullpath = os.path.join(ldir, name)
+
             if os.path.exists(fullpath):
                 with open(fullpath, 'r') as f:
+
+                    # First remove any lines with comments in them, sigh [IM THE GREATEST]
+                    nocomments = "\n".join(list(filter(lambda x: not x.strip().startswith('#'), f.read().split("\n"))))
                     try:
-                        langfile = yaml.load(f)
+                        langfile = yaml.load(nocomments)
                         return langfile
                     except yaml.YAMLError as exc:
                         raise
@@ -320,18 +325,49 @@ class DataParser_save(object):
 
         # split on spaces that aren't in quotes
         # Any not-: or space, up to a :, then \d, then \s, then quote, then anything that isn't a quote, up to the next quote
-        country_splitter = re.compile('(?P<tag>[^:\s]+):\d\s"(?P<name>[^"]+)"')
-        province_splitter = country_splitter
+        gen_splitter = re.compile('(?P<tag>[^:\s]+):\d\s"(?P<name>[^"]+)"')
+
         #Countries
         cdata = load_yaml('countries_l_english.yml')
-        citems = country_splitter.findall(cdata['l_english'])
+        citems = gen_splitter.findall(cdata['l_english'])
         self.langs['en']['countries'] = dict(citems)
         
         # Provinces
         pdata = load_yaml('prov_names_l_english.yml')
-        pitems = province_splitter.findall(pdata['l_english'])
+        pitems = gen_splitter.findall(pdata['l_english'])
         pitems = { int(k.replace('PROV', '')): v for k,v in pitems if 'PROV' in k}
         self.langs['en']['provinces'] = pitems
+
+        # Achievement descriptions
+        data = load_yaml('achievements_l_english.yml')
+        aitems = gen_splitter.findall(data['l_english'])
+
+        #itertools hates me, do it the long way
+        last = None
+        pushed = {}
+        for part in aitems:
+            matching = re.match('(NEW_ACHIEVEMENT_(\d+)_(\d+))_(\w+)', part[0])
+            key = matching.group(1)
+            which = matching.group(4)
+            if key in pushed:
+                pushed[key][which.lower()] = part[1]
+            else:
+                pushed[key] = {}
+                pushed[key][which.lower()] = part[1]
+            # keep maj/min for our records
+            pushed[key]['maj'] = matching.group(2)
+            pushed[key]['min'] = matching.group(3)
+        def mangle(s):
+            # have to conver the proper name to the easy name
+            s = s.replace("'", '').replace('?', '').replace(',', '').lower().strip()
+            s = re.sub("\W", '_', s)
+            s = s.strip('_')
+            s = unidecode(s)
+            return s
+        mangled_ffs = { mangle(d['name']) :d for x,d in pushed.items() }
+        #print({k:v for k, v in mangled_ffs.items() if 'thine' in k})
+        self.langs['en']['achievements'] = mangled_ffs
+
 
     def _(self, subject, key, lang=None):
         if lang is None:

@@ -123,6 +123,13 @@
         <div id="details-container">
             <div id="achievementinfo" class="detail" v-show="showPane('achievement')">
                 <h2>{{ ach.name }} <span>ach</span></h2>
+                <div class="pure-u-1">{{ ach.desc }}</div>
+                <div class="pure-u-1" v-if="ach.tag_for">
+                    <div class="box_ach box" v-on:click="selection('country', ach.tag_for)"><img v-bind:src="flag(ach.tag_for)" class="flag32 down" />  {{ countryname(ach.tag_for) }}</div>
+                </div>
+                <!--
+                <p v-if="'owns_core_province' in ach.happened">Required: {{ ach.happened.owns_core_province.join(', ') }}</p>-->
+                <!--<p>{{ ach }}</p>-->
             </div>
 
             <div id="details" class="detail" v-show="showPane('province')">
@@ -375,7 +382,7 @@
                 return types;
             },
             achievements: state => (needs_cores) => {
-                return _.filter(state.achievements, (x) => needs_cores ? x.needs_cores === true : true);
+                return _.filter(state.achievements, (x) => needs_cores ? x.needs_cores === true || x.needs_control === true : true);
             },
             tradenodes: state => state.game.tradenodes,
             achievement: state => (name) => {
@@ -450,7 +457,6 @@
             },
             pick_achievement() {
                 // reset other filters first
-                this.$store.commit('reset');
                 this.setFilter('achievement', this.subfilter.achievement);
             },
             setTarget(which) {

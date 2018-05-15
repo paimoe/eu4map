@@ -7,6 +7,7 @@ Vue.component('eumap', {
       inited: false,
       game: {},
       target: 'province',
+      highlight: false,
     }
   },
   mounted: function() {
@@ -28,6 +29,12 @@ Vue.component('eumap', {
 
       // Check target
       this.target = this.$store.getters.target;
+
+      // If this is (for now) an achievement filter, make sure we highlight
+      this.highlight = false;
+      if (_.contains(this.$store.getters.selected_type, 'achievement')) {
+        this.highlight = true;
+      }
 
       this.drawProvinces();
     }
@@ -203,6 +210,10 @@ Vue.component('eumap', {
       var prov = this.$store.getters.province(node.id);
       var is_prov = prov !== undefined;
       
+      if (this.highlight) {
+        classes.push('highlight');
+      }
+
       // Who owns it?
       var country = null;
       if (node.owner !== null) {
@@ -267,7 +278,17 @@ Vue.component('eumap', {
         }
       }
       // tradegood
-      // country_r/c
+
+      // If we've selected an achievement
+      if (this.filter('achievement')) {
+        let ach = this.$store.getters.achievement(this.filter('achievement'));
+        let cored = ach.happened.owns_core_province;
+            cored = !Array.isArray(cored) ? [cored] : cored;
+        let owned = ach.happened.owns;
+            owned = !Array.isArray(owned) ? [owned] : owned;
+
+        var inactive = this.ifInactive(node, _.contains(_.union(owned,cored), node.id), true);
+      }
 
       if (inactive === true) {
         classes.push('pinactive');
@@ -279,7 +300,14 @@ Vue.component('eumap', {
 
   provinceStyle: function(node) {
     // If country exists    
-    //console.log('provinceStyle', this.filter('tradenodes'))                
+    //console.log('provinceStyle', this.filter('tradenodes'))
+
+    // if we're highlighting, just do that
+    if (this.highlight) {
+      // use hamburgs colour
+      return 'fill:#e35f07';
+    }
+
     let c = this.getCountry(node['owner']);
     var color = 'gray';
     if (c !== false) {
@@ -329,10 +357,7 @@ Vue.component('eumap', {
       if (tag === null || tag === undefined) {
           return false;
       }
-      if (this.game.c.hasOwnProperty(tag) === false) {
-          return false;
-      } 
-      return this.game.c[tag];
+      return this.$store.getters.country(tag);
   },
   
   clickDetail: function(d) {
