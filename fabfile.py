@@ -9,9 +9,9 @@ should already be linked up in nginx
 when i've verified it live (unit tests run on computer) then symlink /srv/<proj>/live to the new version, and symlink /srv/<proj>/revert to the old version? so a revert is just going back to that basically, ro store the data in a text file 
 """
 
-import os
+import os, shutil
 
-from fabric.api import run, env, abort
+from fabric.api import run, env, abort, local, cd
 from fabric.operations import put
 from fabric.contrib.project import rsync_project as rsync
 
@@ -23,7 +23,7 @@ path = os.path.join
 def deploy():
 
     map_path = '/srv/www/eu4/map/app'
-    dist_dir = path(os.getcwd(), 'app', 'dist/')
+    dist_dir = path(os.getcwd(), 'vapp/')
 
     curr = path(map_path, 'current')
     prev = path(map_path, 'previous')
