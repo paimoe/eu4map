@@ -86,7 +86,7 @@
                         <ul><li v-on:click="setFilter('religions_all')">Show All</li></ul>
                         <ul v-for="(item, key, index) in religions">
                             <li><b>{{ key }}</b></li>
-                            <li v-for="r in item">
+                            <li v-bind:class="{'active': active_religion(r[1])}" v-for="r in item">
                                 <span v-on:click="setFilter('province_r', r[1])">{{ r[0] }}</span>
                             </li>
                         </ul>         
@@ -296,7 +296,7 @@
                 state.loaded = true;
             },
             reset(state) {
-                console.log('IN RESET()');
+                //console.log('IN RESET()');
                 // Update entire _filters object
                 // find nicer way to do this, since this sucks. careful of caveats https://vuejs.org/v2/guide/reactivity.html#Change-Detection-Caveats
                 state.filters.hre = state.filters.releaseable = state.filters.tradenodes = state.filters.formable = state.filters.include_wasteland = false;
@@ -345,10 +345,14 @@
                     return state.filters;
                 }
             },
-            show: state => { return state.show },
-            province: state => (id) => { return state.game.p[id] },
-            provinces_of: state => (tag) => { return _.filter(state.game.p, (x) => x['owner'] == tag) },
-            country: state => (tag) => { return state.game.c[tag] },
+            show: state => state.show,
+
+            // access countries/provinces
+            province: state => (id) => state.game.p[id],
+            provinces_of: state => (tag) => _.filter(state.game.p, (x) => x['owner'] == tag),
+            country: state => (tag) => state.game.c[tag],
+            owner_of: state => (provid) => state.game.c[ state.game.p[provid] ],
+
             selected_type: state => {
                 let types = [];
                 if (state.filters.achievement != '') {
@@ -457,6 +461,11 @@
             },
             check_filter(which) {
                 return this.$store.getters.filters(which);
+            },
+            active_religion(compare) {
+                let r = this.$store.getters.filters('province_r');
+                let c = this.$store.getters.filters('country_r');
+                return r == '' ? c == compare : r == compare;
             }
         },
         computed: {

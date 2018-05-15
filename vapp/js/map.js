@@ -23,7 +23,7 @@ Vue.component('eumap', {
       this.init(); // data files are loaded
     },
     redraw (new1, old1) {
-      console.log('calling map:redraw')
+      console.log('map:redraw')
       this.drawProvinces();
     }
   },
@@ -50,7 +50,7 @@ Vue.component('eumap', {
       return this.$store.getters.filters(which);
     },
     drawProvinces: function() {
-      console.log('drawing provinces');
+      //console.log('drawing provinces');
 
       if (this.inited === false) {
         // make sure we init first
@@ -183,7 +183,6 @@ Vue.component('eumap', {
       }
       
       var paths = svg.append('g').attr('id', 'paths');
-      console.log(svg);
 
       this.inited = true;
 
