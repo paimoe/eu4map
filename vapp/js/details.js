@@ -13,7 +13,10 @@ Vue.component('detailspane', {
     },
     methods: {
         selection: function(type, tag) {
-            console.log('selected tag', type, tag);
+            //console.log('selected tag', type, tag);
+            // Get capital and set selected
+            let cap = this.$store.getters.country(tag);
+            this.$store.commit('selected_p', cap.capital);
         },
         filter: function(type, specific) {
             //console.log('apply map filter', type, specific);
