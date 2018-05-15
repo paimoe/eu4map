@@ -14,9 +14,14 @@ Vue.component('detailspane', {
     methods: {
         selection: function(type, tag) {
             //console.log('selected tag', type, tag);
-            // Get capital and set selected
             let cap = this.$store.getters.country(tag);
-            this.$store.commit('selected_p', cap.capital);
+            if (type == 'reformable') {
+                // just want to highlight basically
+                this.$store.commit('highlight', cap.cores);
+            } else {
+                // Get capital and set selected
+                this.$store.commit('selected_p', cap.capital);
+            }
         },
         setTarget: function(which) {
             this.$store.commit('setTarget', which);
@@ -78,6 +83,9 @@ Vue.component('detailspane', {
             //console.log('show', this.$store.getters.selected_type)
             return _.contains(this.$store.getters.selected_type, which);
         },
+        dev_total(tag) {
+            return this.$store.getters.country_dev(tag);
+        }
     },
     computed: {
         selected() {
@@ -170,6 +178,9 @@ Vue.component('detailspane', {
                 ret.push(p);
             })
             return _.sortBy(ret, x => x.name);
+        },
+        reformable() {
+            return _.sortBy(this.$store.getters.dormant, 'name');
         }
     }
 

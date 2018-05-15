@@ -34,6 +34,8 @@ Vue.component('eumap', {
       this.highlight = false;
       if (_.contains(this.$store.getters.selected_type, 'achievement')) {
         this.highlight = true;
+      } else if (this.$store.getters.highlight.length > 0) {
+        this.highlight = true;
       }
 
       this.drawProvinces();
@@ -288,6 +290,12 @@ Vue.component('eumap', {
             owned = !Array.isArray(owned) ? [owned] : owned;
 
         var inactive = this.ifInactive(node, _.contains(_.union(owned,cored), node.id), true);
+      }
+
+      // Check just raw highlighting
+      let hls = this.$store.getters.highlight;
+      if (hls.length > 0) {
+        var inactive = this.ifInactive(node, _.contains(hls, node.id), true);
       }
 
       if (inactive === true) {
