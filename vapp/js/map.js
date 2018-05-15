@@ -21,8 +21,9 @@ Vue.component('eumap', {
   },
   watch: {
     isloaded (new1, old1) {
-      //console.log('draw2 was updated?????');
-      this.init(); // data files are loaded
+      // data files loaded
+
+      this.init(); 
     },
     redraw (new1, old1) {
       console.log('map:redraw')
@@ -335,13 +336,22 @@ Vue.component('eumap', {
 
         if ('color' in item && _.contains(item.members, node.id)) {
           var col = item['color'];
-          var color = 'rgb(' + col[0] + ',' + col[1] + ',' + col[2] + ')';
+          var color = 'rgb(' + col.join(',') + ')';
         }
       }
-      /*var tnode = this.ds.tradenodes[node.tradenode.name];
-      if ('color' in tnode) {
-        var color = 'rgb(' + tnode.color[0] + ',' + tnode.color[1] + ',' + tnode.color[2] + ')';
-      }*/
+    }
+
+    if (this.filter('religions_all')) {
+      // colour based on religion in province
+      if (node.religion !== null ) {
+        // get color
+        let rel = _.filter(_.flatten(Object.values(this.$store.getters.misc('religions')), true), x => x[1] == node.religion); // hope this never breaks ever
+        if (rel !== undefined && rel.length > 0) {
+          var color = rel[0][2];
+          //console.log('colory', color);
+          color = 'rgb(' + color.join(',') + ')';
+        }
+      }
     }
 
     return 'fill: ' + color;

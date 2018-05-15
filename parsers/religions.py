@@ -27,12 +27,13 @@ class ReligionParser(DataParser_save):
         # Ignore some keys for now, like papal actions/fervor etc
 
         self.save(parsed)
+        #print(parsed['christian'])
 
         # Group up
         ignore = ['religious_schools']
         compiled = {}
         for gname, rel in parsed.items():
-            subkeys = [ (sub, sub) for sub in rel.keys() if isinstance(rel[sub], dict) and sub not in ignore ]
+            subkeys = [ (sub, sub, parsed[gname][sub]['color']) for sub in rel.keys() if isinstance(rel[sub], dict) and sub not in ignore ]
             subkeys = sorted(list(map(self.clean_name, subkeys)))
 
             compiled[ self.clean_name(gname) ] = subkeys
@@ -43,6 +44,6 @@ class ReligionParser(DataParser_save):
 
     def clean_name(self, s):
         if isinstance(s, tuple):
-            return (s[0].partition('_')[0].capitalize(), s[1])
+            return (s[0].partition('_')[0].capitalize(), s[1], s[2])
         else:
             return s.partition('_')[0].capitalize()
