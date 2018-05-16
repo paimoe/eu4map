@@ -197,13 +197,14 @@ class ProvinceParser(DataParser_save):
 
         # Removed all comments
         lines = "\n".join(noco)
-        match = list(re.findall("(\w+)\s?\=\s?{\s?(.+)\s?}", lines))
+        match = list(re.findall("(\w+)\s?\=\s?{\s?([\d\s]*?)\s?}", lines))
 
+        # Breaks with newlines in the areas :(
         allareas = {}
         for m in match:
             # m is tuple (area_name, str_of_ids)
             area = m[0]
-            ids = filter(None, m[1].split(' '))
+            ids = filter(None, m[1].split())
             allareas.update({ int(a): area for a in ids })
 
         return allareas
