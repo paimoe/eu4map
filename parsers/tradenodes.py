@@ -39,15 +39,15 @@ class TradenodeParser(DataParser_save):
         Sublime find/replace: (\w+)\s+(\d+)\,\s+(\d+)\,\s+(\d+)\s and \t'\1': [\2, \3, \4],\n as replace
         """
         replacements = {
-            'aleppo': ['Aleppo', 120,148,140],
-            'alexandria': ['Alexandria', 200, 200, 102],
-            'amazonas_node': ['Amazonas', 57, 160, 101], # amazonas
-            'astrakhan': ['Astrakhan',130, 25, 74],
-            'australia': ['Australia',69, 130, 203],
+            'aleppo': [ 120,148,140],
+            'alexandria': [ 200, 200, 102],
+            'amazonas_node': [57, 160, 101, 'Amazonas'], # amazonas
+            'astrakhan': [130, 25, 74],
+            'australia': [69, 130, 203],
             'baltic_sea': [8, 82, 165],
             'basra': [193, 65, 54],
             'beijing': [147, 157, 76],
-            'ganges_delta': [118, 99, 151], # bengal
+            'ganges_delta': [118, 99, 151, 'Bengal'], # bengal
             'bordeaux': [36, 132, 247],
             'brazil': [220, 138, 57],
             'california': [199, 175, 12],
@@ -117,12 +117,30 @@ class TradenodeParser(DataParser_save):
             'zanzibar': [130, 17, 17],
         }
 
+        # Also create an 'incoming' based on others' 'outgoing'
+        def out_nodes(node):
+            if 'outgoing' in node:
+                if isinstance(node['outgoing'], dict):
+                    return [node['outgoing']['name']]
+                return [ n['name'] for n in node['outgoing'] ]
+            return []
+        for node, info in self.data.items():
+            # Find node in others
+            incoming = [ k for k,v in self.data.items() if node in out_nodes(v) ]
+            self.data[node]['incoming'] = incoming
+
         for k,v in replacements.items():
             if k in self.data:
                 if 'color' not in self.data[k]:
-                    self.data[k]['color'] = v
+                    self.data[k]['color'] = v[0:3]
+
+                if len(v) == 4:
+                    # use new name
+                    self.data[v[3]] = self.data[k]
+                    del self.data[k]
 
         if one is not None:
+            print(self.data[one])
             return self.data[one]
 
         # only save the name
