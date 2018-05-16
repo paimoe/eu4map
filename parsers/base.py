@@ -50,6 +50,9 @@ class Checksum(object):
             'when': str(datetime.datetime.now()),
             'time': self.end_time - self.start_time
             }
+        if key not in self.data and not isinstance(self.data[key], dict):
+            self.data[key] = {}
+
         self.data[key].update(set_dict)
 
         with open(self.cfile, 'w') as f:
@@ -320,7 +323,7 @@ class DataParser_save(object):
 
         def grouper(n, iterable, fillvalue=None):
             args = [iter(iterable)] * n
-            print('args', args)
+            #print('args', args)
             return itertools.zip_longest(fillvalue=fillvalue, *args)
 
         # split on spaces that aren't in quotes

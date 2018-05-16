@@ -24,12 +24,14 @@ import namedlist
 import re
 
 from parsers import *
+from parsers.base import Checksum
 import constants, renames
 
 # Get path to Eu4 folder so we don't have to move anything
 # auto-detect later
 assert os.path.exists(EU4_PATH)
-assert os.path.exists(os.path.join(EU4_PATH, 'eu4.exe'))
+#assert os.path.exists(os.path.join(EU4_PATH, 'eu4.exe')) # windows
+assert os.path.exists(os.path.join(EU4_PATH, 'eu4'))
 
 def rgb_to_hex(red, green, blue):
     """Return color as #rrggbb for the given color values."""
@@ -43,11 +45,16 @@ def generate_svg_json():
     dest = 'output/eu4map.json'
 
     cs = Checksum()
+    cs.start()
 
     doc = minidom.parse(src)
 
     # load definitions, so we can also add the provid
-    df = pd.read_csv('sources/definition.csv', sep=';', encoding='latin-1')
+    try:
+        df = pd.read_csv('sources/definition.csv', sep=';', encoding='latin-1')
+    except pd.parser.CParserError as exc:
+        print('Probably an extra semicolon in definition.csv: {}'.format(exc))
+        sys.exit()
 
     ps = []
     for g in doc.getElementsByTagName('g'):
