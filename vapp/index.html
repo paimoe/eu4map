@@ -152,7 +152,7 @@
 
                 <div class="pure-u-1-2">
                     <div class="box">
-                        <img v-bind:src="'assets/i/religion/' + sp.religion + '.png'" class="icon" /><a v-on:click="setTarget('provinces');filter('religion', sp.religion)" class="tooltip-left cap mid" data-tooltip="Provinces with this religion">{{ sp.religion }}</a>
+                        <img v-bind:src="'assets/i/religion/' + sp.religion + '.png'" class="icon" /><a v-on:click="setTarget('provinces');filter('religion', sp.religion)" class="tooltip-right cap mid" data-tooltip="Provinces with this religion">{{ sp.religion }}</a>
                     </div>
                 </div>
                 <div class="pure-u-1-2">
@@ -189,7 +189,7 @@
     
                         <div class="pure-u-1-2">
                             <div class="box">
-                                <img v-bind:src="'assets/i/religion/' + sCountry.religion + '.png'" class="icon" /><a v-on:click="setTarget('countries');filter('religion', sCountry.religion)" class="tooltip-left cap mid" data-tooltip="Countries with this religion">{{ sCountry.religion }}</a>
+                                <img v-bind:src="'assets/i/religion/' + sCountry.religion + '.png'" class="icon" /><a v-on:click="setTarget('countries');filter('religion', sCountry.religion)" class="tooltip-right cap mid" data-tooltip="Countries with this religion">{{ sCountry.religion }}</a>
                             </div>
                         </div>
                         <div class="pure-u-1-2">
@@ -555,8 +555,14 @@
                 // data
                 var self = this;
 
+                // Keep most in localStore/indexeddb, maybe cached
+                // start with eu4map since that rarely changes
+
                 // Load
-                Promise.all(['countries.json', 'provdata.json', 'eu4map.json', '_all.json', 'tradenodes.json', '_day1.json', 'achievements.json'].map(url => 
+                Promise.all([
+                    'countries.json', 'provdata.json', 'eu4map.json', '_all.json', 'tradenodes.json', '_day1.json', 'achievements.json',
+                    '_religions.json',
+                ].map(url => 
                     fetch('/assets/' + url).then(resp => resp.json())
                 )).then(data => {
                     //console.log('DATA', data);
