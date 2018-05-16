@@ -59,12 +59,19 @@ class ProvinceParser(DataParser_save):
         self.areas = self.parse_areas()
         self.lakes = self.parse_water()
 
+        keep_copy = None
+
         for root, dirs, files in os.walk(self.provinces):
             files = sorted(files, key=lambda x: self.first_nums(x))
             for f in files:
                 if f.endswith('txt'):
                     if one is None or (one is not None and self.first_nums(f) in one):
                         #print('checking ', f)
+
+                        # Hold onto this to mirror it below
+                        if self.first_nums(f) == 1797:
+                            keep_copy = os.path.join(root, f)
+
                         c = self.parse(os.path.join(root, f))
                         c = self.set_special(c)
 
@@ -74,9 +81,19 @@ class ProvinceParser(DataParser_save):
 
                         self.allprovinces[int(c.id)] = c
 
+        # Nothing for: Central Africa [1796], Western Australia [1790], Central Australia [1791]
+        # So just copy from another wasteland?
+        fake_names = {1796: 'Central Africa', 1790: 'Western Australia', 1791: 'Central Australia'}
+        for i, name in fake_names.items():
+            c = self.parse(keep_copy)
+            c.id = i
+            c.name = name
+            c = self.set_special(c)
+            # wasteland so ignore trade node
+            self.allprovinces[i] = c
+
         # Also get other parts
         # Get province name
-        #print(self.allprovinces)
         df = pd.read_csv(self.namesrc, sep=';', encoding='latin-1')
 
         for index, row in df.iterrows():
@@ -240,7 +257,6 @@ class ProvinceParser(DataParser_save):
         """
         if c.id in self.areas:
             c.area = self.areas[c.id]
-
         if c.id in constants.WASTELANDS:
             c.wasteland = True
         if c.id in self.lakes['seas']:
