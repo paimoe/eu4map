@@ -30,7 +30,7 @@ MAP = {
         'East Frisia': 'EastFrisia',
         'Janjiro': 'Janjero',
         'The Hedjaz': 'Hedjaz',
-        'Hisn Kayfa': '',
+        'Hisn Kayfa': 'Ayyubids',
         'Clanricarde': 'Connacht',
         'Rewa Kantha': 'RewaKantha',
         'nupe': 'Nupe',
@@ -44,7 +44,11 @@ MAP = {
         'Annizah': 'Anizah',
         'dagbon': 'Dagbon',
         'Kara Del': 'Karadel',
-        'Karabakh': ''
+        'Karabakh': 'Kashen',
+        'Kilwa': 'Swahili',
+        'Madyas': 'Madyaas',
+        #'Maynila': '',
+
     }
 }
 

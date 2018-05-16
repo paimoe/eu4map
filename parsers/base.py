@@ -37,6 +37,9 @@ class Checksum(object):
         self.start_time = timer()
 
     def save(self, key, data):
+        if 'tests/test.py' in sys.argv:
+            return
+
         self.end_time = timer()
 
 
@@ -50,7 +53,7 @@ class Checksum(object):
             'when': str(datetime.datetime.now()),
             'time': self.end_time - self.start_time
             }
-        if key not in self.data and not isinstance(self.data[key], dict):
+        if key not in self.data:
             self.data[key] = {}
 
         self.data[key].update(set_dict)

@@ -57,6 +57,8 @@ class ProvinceParser(DataParser_save):
 
         self.allprovinces = {}
         self.areas = self.parse_areas()
+        self.lakes = self.parse_water()
+
         for root, dirs, files in os.walk(self.provinces):
             files = sorted(files, key=lambda x: self.first_nums(x))
             for f in files:
@@ -103,7 +105,6 @@ class ProvinceParser(DataParser_save):
         with open(fname, 'r', encoding='latin-1') as fc:
             read = fc.read()
 
-
         parsed = self.oneline(read)
         
         for pline in parsed.items():
@@ -123,7 +124,10 @@ class ProvinceParser(DataParser_save):
                 setattr(prov, k, v)
 
             if k == 'add_core':
-                prov.cores.append(v)
+                if isinstance(v, list):
+                    prov.cores.extend(v)
+                else:
+                    prov.cores.append(v)
             if k == 'add_claim':
                 prov.claims.append(v)
             if k == 'discovered_by':
@@ -151,31 +155,42 @@ class ProvinceParser(DataParser_save):
             # Check through the history, apply any before our start date
             if is_dt:
                 prov.history.append({ self.format_date(k): v })
-                if k <= self.min_dt:
-                    # Apply this
-                    #print('Applying history ', v)
-                    for act, val in v.items():
-                        #print(act,val)
-                        if act in ('owner', 'controller', 'culture', 'hre',):
-                            setattr(prov, act, val)
-
-                        if act == 'add_core':
-                            prov.cores.append(val)
-                        if act == 'add_claim':
-                            prov.claims.append(val)
-                        if act == 'discovered_by':
-                            prov.visible.append(val)
-                        if act == 'hre':
-                            prov.hre = val
-                        if act == 'trade_goods':
-                            prov.trade = val
-                        if act == 'religion':
-                            if val in renames.RELIGIONS:
-                                val = renames.RELIGIONS[val]
-                            prov.religion = val
 
         # sort history by datetime key
-        #prov.history.sort(key=dict.keys)
+        prov.history.sort(key=lambda x: list(x.keys())[0])
+
+        # Apply history
+        for h in prov.history:
+            k = list(h.keys())[0]
+            v = h[k]
+            if datetime.datetime.strptime(k, "%Y-%m-%d") <= self.min_dt:
+                # Apply this
+                #print('Applying history ', v)
+                try:
+                    v.items()
+                except AttributeError:
+                    # Fuck it
+                    continue
+                for act, val in v.items():
+                    #print('av',act,val)
+                    if act in ('owner', 'controller', 'culture', 'hre',):
+                        setattr(prov, act, val)
+
+                    if act == 'add_core':
+                        prov.cores.append(val)
+                        pass
+                    if act == 'add_claim':
+                        prov.claims.append(val)
+                    if act == 'discovered_by':
+                        prov.visible.append(val)
+                    if act == 'hre':
+                        prov.hre = val
+                    if act == 'trade_goods':
+                        prov.trade = val
+                    if act == 'religion':
+                        if val in renames.RELIGIONS:
+                            val = renames.RELIGIONS[val]
+                        prov.religion = val
 
         return prov
 
@@ -209,6 +224,16 @@ class ProvinceParser(DataParser_save):
 
         return allareas
 
+    def parse_water(self):
+        fname = self.gamefilepath('map/default.map')
+        with open(fname, 'r') as f:
+            water = self.oneline(f.read())
+
+        return {
+            'lakes': water['lakes'],
+            'seas': water['sea_starts']
+        }
+
     def set_special(self, c):
         """
         Set ocean/sea/wasteland
@@ -218,9 +243,9 @@ class ProvinceParser(DataParser_save):
 
         if c.id in constants.WASTELANDS:
             c.wasteland = True
-        if c.area in constants.SEAS:
+        if c.id in self.lakes['seas']:
             c.ocean = True
-        if c.id in constants.LAKES:
+        if c.id in self.lakes['lakes']:
             c.lake = True
         return c
 

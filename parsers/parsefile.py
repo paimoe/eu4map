@@ -465,8 +465,10 @@ class ParseFile(object):#{
             else:#{
                 # If it looks like a date
                 datesearch = self.match_date.search(val)
-                if (datesearch != None):#{
+                if (datesearch != None ):#{
                     val = to_date(*list(map(int, datesearch.groups())))
+                    if key is True:
+                        val = val.strftime("%Y.%m.%d")
                 #}
                 # If it looks like a decimal, or list of them
                 elif (self.match_num_list.match(val)):#{

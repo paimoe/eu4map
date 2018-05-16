@@ -80,7 +80,7 @@ class CountryParser(DataParser_save):
                         if name in renames.MAP['common/countries']:
                             name = renames.MAP['common/countries'][name]
 
-                        if name == fname:
+                        if name == fname or c.name == fname:
                             # Edit this one
                             newcolor = self.parse_color(os.path.join(root, f))
                             c.color = newcolor
