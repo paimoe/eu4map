@@ -42,11 +42,11 @@
                     <!-- pull this right -->
                     <li class="filterswitches">
                         <div>
-                            <a href="#p" v-on:click="setTarget('provinces')" v-bind:class="{'active': check_filter('target') == 'provinces', 'tooltip-bottom': true}" data-tooltip="Apply filters per province">Provinces</a>
-                            <a href="#c" v-on:click="setTarget('countries')" v-bind:class="{'active': check_filter('target') == 'countries', 'tooltip-bottom': true}" data-tooltip="Apply filters per country">Countries</a>
+                            <a v-on:click="setTarget('provinces')" v-bind:class="{'active': check_filter('target') == 'provinces', 'tooltip-bottom': true}" data-tooltip="Apply filters per province">Provinces</a>
+                            <a v-on:click="setTarget('countries')" v-bind:class="{'active': check_filter('target') == 'countries', 'tooltip-bottom': true}" data-tooltip="Apply filters per country">Countries</a>
                         </div>
                         <div style="display:none">
-                            <a href="#" v-on:click="setOption('include_wasteland')" v-bind:class="{'active': check_filter('include_wasteland'), 'tooltip-bottom': true}" data-tooltip="Include uncolonized/wasteland">+Wasteland</a>
+                            <a v-on:click="setOption('include_wasteland')" v-bind:class="{'active': check_filter('include_wasteland'), 'tooltip-bottom': true}" data-tooltip="Include uncolonized/wasteland">+Wasteland</a>
                         </div>
                     </li>
                 </ul>
@@ -247,6 +247,7 @@
 
   <script src="/node_modules/vue/dist/vue.min.js"></script>
   <script src="/node_modules/vuex/dist/vuex.min.js"></script>
+  <script src="/node_modules/vue-router/dist/vue-router.min.js"></script>
   <script src="/node_modules/d3/dist/d3.min.js"></script>
   <script src="/node_modules/underscore/underscore-min.js"></script>
 
@@ -316,6 +317,21 @@
         mutations: {
             loaded (state) {
                 state.loaded = true;
+            },
+            init (state, route) {
+                //console.log('initialise Filters', route);
+                if (route.name == 'filter') {
+                    //let q = route.query;
+                    _.each(route.query, (val, k) => {
+                        if (k in state.filters) {
+                            //console.log('setting state.filters[' + k + '] = ' + val);
+                            if (typeof state.filters[k] === "boolean") {
+                                val = val == 1 ? true : false;
+                            }
+                            state.filters[k] = val;
+                        }
+                    })
+                }
             },
             reset(state) {
                 //console.log('IN RESET()');
@@ -452,7 +468,7 @@
         }
     });
 
-    Vue.component('filters', {
+    const Filters = Vue.component('filters', {
         template: '#filters',
         data: function() {
             return {
@@ -465,12 +481,19 @@
                 }
             }
         },
+        watch: {
+            '$route' (to, from) {
+                console.log('route', to, from);
+            }
+        },
         methods: {
             reset() {
                 // set t hings back to defaults somehow
                 this.type = this.rgroup = this.r = '';
                 this.opts = {};
                 this.religiongroups = this.religions = [];
+
+                this.$router.push({'path': '/'});
 
                 this.$store.commit('reset');
             },
@@ -486,6 +509,16 @@
             },
             setFilter(which, extras) {
                 //console.log('setfilter')
+                // update url
+                let q = {};
+                if (extras === undefined) {
+                    extras = 1;
+                }
+                q[which] = extras;
+
+                // If it's already set, and is bool, flip it
+                
+                this.$router.push({name: 'filter', query: q});
                 this.$store.commit('filter', {'which': which, 'opts': extras})
             },
             pick_achievement() {
@@ -532,9 +565,21 @@
         }
     });
 
+    // Routes I guess?
+    const routes = [
+        { path: '/filter', component: Filters, name: 'filter' },
+        { path: '/country/:tag', component: EUMap, name: 'country' }
+    ];
+
+    const router = new VueRouter({
+       // mode: 'history',
+        routes
+    });
+
     var app = new Vue({
         el: '#container',
         store,
+        router,
         data: {
 
         },
@@ -545,7 +590,7 @@
         },
         methods: {
             init() {
-                console.log('init page, load data files');
+                console.log('init');
 
                 // create filters from base
                 // also create '_filters' from _bools and _strs?
@@ -574,9 +619,18 @@
                     self.$store.state.game.tradenodes = data[4];
                     self.$store.state.save = data[5];
                     self.$store.state.achievements = data[6];
+                    //self.$store.state.religions = data[7];
+
+                    //console.log('data1', self.$store.state.game.tradenodes)
+
+                    self.checkPath();
 
                     self.applySave();
                 })
+            },
+
+            checkPath() {
+                this.$store.commit('init', this.$route);
             },
 
             applySave() {

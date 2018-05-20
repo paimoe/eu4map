@@ -1,6 +1,6 @@
 
 
-Vue.component('eumap', {
+var EUMap = Vue.component('eumap', {
   template: '#eumap',
   data: function() {
     return {
@@ -40,6 +40,13 @@ Vue.component('eumap', {
       }
 
       this.drawProvinces();
+    },
+    '$route' (to, from) {
+      if (to.path == '/nation') {
+        console.log('zoom to nation capital');
+
+      }
+      //console.log('in map: might need to zoom etc', to, from);
     }
   },
 
@@ -144,7 +151,7 @@ Vue.component('eumap', {
       return pathsdata;
     },
     init: function() {
-      console.log('map: setup');
+      console.log('map:setup');
       // initial setup, don't apply filters though
       var width = 1500;
       var height = 700;
