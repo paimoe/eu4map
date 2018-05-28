@@ -300,6 +300,13 @@ var EUMap = Vue.component('eumap', {
         var inactive = this.ifInactive(node, _.contains(_.union(owned,cored), node.id), true);
       }
 
+      if (this.filter('c_gov')) {
+        var inactive = false;
+        if (country !== null) {
+          var inactive = this.ifInactive(node, country.gov == this.filter('c_gov'), true);
+        }
+      }
+
       // Check just raw highlighting
       let hls = this.$store.getters.highlight;
       if (hls.length > 0) {

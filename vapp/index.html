@@ -80,7 +80,7 @@
                         <ul>
                             <li><b>Misc</b></li>
                             <li><span v-on:click="setFilter('reformable')">Reformable ({{ reformable.length }})</span></li>
-                            <li><span v-on:click="setFilter('has_custom_missions')">Has Custom Missions</span></li>
+                            <li style="display:none"><span v-on:click="setFilter('has_custom_missions')">Has Custom Missions</span></li>
                         </ul>
                     </div>
                     <div id="filter_religions" v-show="type == 'religion'">
@@ -105,8 +105,8 @@
                             <li><b>Type</b></li>
                             <li><span v-on:click="setFilter('areas_regions')">Regions</span></li>
                             <li><span v-on:click="setFilter('areas_areas')">Areas</span></li>
-                            <li><span v-on:click="setFilter('areas_colonial')">Colonial Regions</span></li>
-                            <li><span v-on:click="setFilter('areas_trade')">Trade Company</span></li>
+                            <li style="display:none"><span v-on:click="setFilter('areas_colonial')">Colonial Regions</span></li>
+                            <li style="display:none"><span v-on:click="setFilter('areas_trade')">Trade Company</span></li>
                         </ul>                        
                     </div>
                 </div>
@@ -483,7 +483,7 @@
         },
         watch: {
             '$route' (to, from) {
-                console.log('route', to, from);
+                //console.log('route', to, from);
             }
         },
         methods: {
@@ -498,7 +498,6 @@
                 this.$store.commit('reset');
             },
             filterType(what) {
-                console.log('wz', what)
                 if (this.type === what) {
                     // reset
                     this.reset();
