@@ -73,23 +73,6 @@ def generate_svg_json():
             for child in g.childNodes:
                 if child.nodeName == 'path':
                     d = child.getAttribute('d')
-                    # change the initial move to divide by 10 since its too big for some reason, work on the svg output @todo
-                    """
-                    m = d.split(' ')
-
-                    if m[0][0] == 'M':
-                        m[0] = 'M{0}'.format(int(m[0][1:]) / 10)
-                        m[1] = str(int(m[1]) / 10)
-                        d = ' '.join(m)
-
-                        print(m, d)
-                        #sys.exit()
-                    else:
-                        rel = list(map(lambda x: str(int(x)/10), m[1].split(',')))
-                        #print(rel)
-                        m[1] = ','.join(rel)
-                        d = ' '.join(m)
-                    """
                     ps.append({
                         'd': d,
                         'hex': fill,
@@ -132,7 +115,7 @@ if __name__ == '__main__':
     opts = parser.parse_args()
 
     # loaders
-    loaders = ['province', 'country', 'religion', 'tradenode', 'achievement', 'units', 'culture']
+    loaders = ['province', 'country', 'religion', 'tradenode', 'achievement', 'units', 'culture', 'regions']
 
     if opts.action in loaders:
         p = eval("{0}Parser()".format(opts.action.capitalize()))

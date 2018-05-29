@@ -5,6 +5,7 @@ import namedlist
 import pandas as pd
 
 from .tradenodes import TradenodeParser
+from .areas_regions import RegionsParser
 
 import constants, renames,sys
 
@@ -28,7 +29,7 @@ class ProvinceParser(DataParser_save):
         # Set up container
         fields = ('id', 'name', 'owner', 'controller', 'cores', 'culture', 'religion', 
             'tax', 'prod', 'man', 'trade', 'hre', 'claims', 'visible', 'area', 'sea', 'ocean', 'lake', 'wasteland',
-            'history', 'tradenode')
+            'history', 'tradenode', 'tile')
         nlistfields = []
         # Set types of specifics
         for n in fields:
@@ -39,7 +40,7 @@ class ProvinceParser(DataParser_save):
                 t = 0
             elif n in ('sea', 'ocean', 'wasteland', 'lake'):
                 t = False
-            elif n in ('tradenode',):
+            elif n in ('tradenode','tile'):
                 t = {}
             else:
                 t = None
@@ -47,9 +48,12 @@ class ProvinceParser(DataParser_save):
 
         return namedlist.namedlist('Province', nlistfields)() # create
 
-    def parse_all(self, from_fresh=False, one=None):
+    def parse_all(self, from_fresh=False, one=None, internal=False):
         tp = TradenodeParser(test=True, internal=True)
         tp.parse_all()
+
+        areasParser = RegionsParser()
+        areas = areasParser.parse_all(return_province_data=True)
 
         if one is not None:
             if not isinstance(one, list):
@@ -79,18 +83,22 @@ class ProvinceParser(DataParser_save):
                         c.tradenode['name'] = tp.belongs_to(c.id) # color is in the tradenodes datafile
                         c.tradenode['main'] = tp.is_main(c.id)
 
+                        if c.id in areas:
+                            c.tile = areas[c.id]
+
                         self.allprovinces[int(c.id)] = c
 
         # Nothing for: Central Africa [1796], Western Australia [1790], Central Australia [1791]
         # So just copy from another wasteland?
-        fake_names = {1796: 'Central Africa', 1790: 'Western Australia', 1791: 'Central Australia'}
-        for i, name in fake_names.items():
-            c = self.parse(keep_copy)
-            c.id = i
-            c.name = name
-            c = self.set_special(c)
-            # wasteland so ignore trade node
-            self.allprovinces[i] = c
+        if one is None:
+            fake_names = {1796: 'Central Africa', 1790: 'Western Australia', 1791: 'Central Australia'}
+            for i, name in fake_names.items():
+                c = self.parse(keep_copy)
+                c.id = i
+                c.name = name
+                c = self.set_special(c)
+                # wasteland so ignore trade node
+                self.allprovinces[i] = c
 
         # Also get other parts
         # Get province name

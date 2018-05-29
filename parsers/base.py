@@ -571,6 +571,11 @@ class DataParser_save(object):
                 k = None
                 v = None
 
+    def oneline_path(self, path, encoding='latin-1', **kwargs):
+        with open(path, 'r', encoding=encoding) as f:
+            read = f.read()
+        return self.oneline(read, **kwargs)
+
     def oneline(self, t, **kwargs):
         """
         """
