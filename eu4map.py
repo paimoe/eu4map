@@ -81,9 +81,6 @@ def generate_svg_json():
                         'n': prov.iloc[0].x,
                     })
 
-    print('len', len(ps))
-
-    print(ps[0])
     # save paths to hopefully cleaner json
     # fudge hash func, or it mixes up dict
     cs.save('map', ps)

@@ -41,3 +41,23 @@ def deploy():
     # Add versions/symlinks later
 
     # Restart in supervisor/nginx? no since just static stuff
+    # Symlink the config files to nginx
+
+    # Maybe restart nginx if needed?
+    print('UPDATE INDEX.HTML to change the BASE HREF to "/map/" and ENABLE HISTORY MODE IN VueRouter')
+
+def deploy_assets():
+    # Only upload the output/ assets (that we want)
+    # maybe later upload to a hidden /data dir that's just symlinked, but whatever
+    dest = '/srv/www/eu4/map/app/current/data/'
+    depdir = '.deploy/'
+
+    wanted = ['achievements', 'countries', 'eu4map', 'provdata', 'tradenodes', 'ui', 'units', 'data/_all']
+    # move wanted to a temp 'build' dir
+    os.makedirs(depdir, exist_ok=True)
+    for f in wanted:
+        shutil.copy(path('output', f + '.json'), depdir)
+
+    rsync(local_dir=depdir, remote_dir=dest, exclude=[])
+    shutil.rmtree(depdir)    
+
