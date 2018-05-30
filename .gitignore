@@ -5,6 +5,7 @@ eu4map.sublime-workspace
 eu4map.sublime-project
 geckodriver*
 app/dist
+NOTES
 
 app/node_modules
 # See http://help.github.com/ignore-files/ for more about ignoring files.
